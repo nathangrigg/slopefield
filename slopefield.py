@@ -9,8 +9,18 @@ class Canvas:
         self.ymin=ymin
         self.ymax=ymax
         self.canvas_w,self.canvas_h = canvas_size
-        self.ctop,self.cbottom = 0,self.canvas_h
-        self.cleft,self.cright = 0,self.canvas_w
+        
+        # make axis ticks and labels
+        
+        self.xaxis = [xmin + float(xmax-xmin)*i/10 for i in range(11)]
+        self.xaxis_label = ["%.3g" % x for x in self.xaxis]
+        self.yaxis = [ymin + float(ymax-ymin)*i/10 for i in range(11)]
+        self.yaxis_label = ["%.3g" % y for y in self.yaxis]
+        self.yaxis_label_width = max([len(label) for label in self.yaxis_label])
+
+        # adjust for labels
+        self.ctop,self.cbottom = 5,self.canvas_h - 15
+        self.cleft,self.cright = 5*self.yaxis_label_width+5,self.canvas_w-5
 
         # sets up translation from x,y to canvas
         self.xm = float(self.cright-self.cleft)/(self.xmax-self.xmin)
@@ -18,31 +28,97 @@ class Canvas:
         self.ym = float(self.ctop-self.cbottom)/(self.ymax-self.ymin)
         self.yb = self.cbottom - self.ym * self.ymin
 
-    def translate(self,tick):
+    def translate_tick(self,tick):
+        x1,y1,x2,y2=tick
+        out = self.translate(x1,y1)
+        out.extend(self.translate(x2,y2))
+        return out
+
+    def translate(self,x,y):
         """Translates a tick from x,y coords to canvas coords"""
-        x1,y1,x2,y2 = tick
-        return [x1*self.xm + self.xb, y1*self.ym + self.yb,
-                x2*self.xm + self.xb, y2*self.ym + self.yb]
+        return [self.translate_x(x), self.translate_y(y)]
+
+    def translate_x(self,x):
+        return x*self.xm + self.xb
+        
+    def translate_y(self,y):
+        return y*self.ym + self.yb
 
     def svg_tick(self,tick):
         """Returns a line of svg representing the tick"""
         return '<line x1 = "%.03f" y1 = "%.03f" x2 = "%.03f" y2 = "%.03f" />' \
-               % tuple(self.translate(tick))
+               % tuple(self.translate_tick(tick))
 
     def svg_head(self):
-        return """<?xml version="1.0" standalone="no"?>
+        yield """<?xml version="1.0" standalone="no"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 20001102//EN" "svg-20001102.dtd">
-<svg viewBox="0 0 600 600"
+<svg viewBox="0 0 %d %d"
  xmlns="http://www.w3.org/2000/svg"
- xmlns:xlink="http://www.w3.org/1999/xlink">
- <g style="stroke-width:1; stroke:black;">
- """
+ xmlns:xlink="http://www.w3.org/1999/xlink">""" % (self.canvas_w,
+                                                   self.canvas_h)
+        for line in self.axes():
+            yield line
+            
+        yield '<g style="stroke-width:1; stroke:black;">'
 
     def svg_foot(self):
         return "</g></svg>"
+        
+    def axes(self):
+        """Creates a box with axis labels"""
 
+        # the box
+        yield '<g style="stroke-width:0.5; stroke:black;">'
+        yield '<line x1="%s" y1="%s" x2="%s" y2="%s" />' % \
+              (self.cleft,self.ctop,self.cleft,self.cbottom+2)
+        yield '<line x1="%s" y1="%s" x2="%s" y2="%s" />' % \
+              (self.cleft-2,self.cbottom,self.cright,self.cbottom)
+        yield '<line x1="%s" y1="%s" x2="%s" y2="%s" />' % \
+              (self.cright,self.cbottom+2,self.cright,self.ctop)
+        yield '<line x1="%s" y1="%s" x2="%s" y2="%s" />' % \
+              (self.cleft-2,self.ctop,self.cright,self.ctop)
 
+             
+        # the ticks
+        for x in self.xaxis[1:-1]:
+            yield '<line x1="%s" y1="%s" x2="%s" y2="%s" />' % \
+              (self.translate_x(x),self.cbottom-2,
+               self.translate_x(x),self.cbottom+2)
+            yield '<line x1="%s" y1="%s" x2="%s" y2="%s" />' % \
+              (self.translate_x(x),self.ctop,
+               self.translate_x(x),self.ctop+2)
 
+               
+        
+        for y in self.yaxis[1:-1]:
+            yield '<line x1="%s" y1="%s" x2="%s" y2="%s" />' % \
+              (self.cleft-2,self.translate_y(y),
+               self.cleft+2,self.translate_y(y))
+            yield '<line x1="%s" y1="%s" x2="%s" y2="%s" />' % \
+              (self.cright-2,self.translate_y(y),
+               self.cright,self.translate_y(y))               
+               
+        yield "</g>"
+           
+        # the x axis labels
+        yield '<g font-family="Verdana" font-size="10px"\
+         style="text-anchor: middle;">'
+        for value,label in zip(self.xaxis,self.xaxis_label):
+            yield '<text x="%s" y="%s">%s</text>' % \
+            (self.translate_x(value),self.canvas_h,label)
+        yield '</g>'
+        
+        # the y axis labels
+        yield '<g font-family="Verdana" font-size="10px"\
+         style="text-anchor:end;">'
+        for value,label in zip(self.yaxis,self.yaxis_label):
+            yield '<text x="%d" y="%s">%s</text>' % \
+            (self.yaxis_label_width*5,self.translate_y(value)+4,label)
+        yield '</g>'
+
+        
+ 
+  
 def tick(x,y,f,length):
     """Returns a tick centered at x,y with slope f(x,y) and given length"""
     try:
@@ -70,7 +146,7 @@ def slopefield(f,xmin=-1,xmax=1,ymin=-1,ymax=1,xticks=20,yticks=20):
     assert 1 <= xticks <= 50 and 1 <= yticks <= 50
     dx = float(xmax-xmin)/(xticks+1)
     dy = float(ymax-ymin)/(yticks+1)
-    ticklength = 0.7 * min(dx,dy)
+    ticklength = 0.6 * min(dx,dy)
 
     # loop
     x = xmin + 0.5 * dx
@@ -85,8 +161,10 @@ def svg_slopefield(f,xmin=-1,xmax=1,ymin=-1,ymax=1,canvas_size=(400,400),
                xticks=20,yticks=20):
     """Returns an svg image for a slopefield"""
     canvas = Canvas(xmin,xmax,ymin,ymax,canvas_size)
-    yield canvas.svg_head()
-
+    
+    for line in canvas.svg_head():
+        yield line
+        
     for tick in slopefield(f,xmin,xmax,ymin,ymax,xticks,yticks):
         yield canvas.svg_tick(tick)
 
