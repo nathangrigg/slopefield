@@ -72,40 +72,39 @@ def BNF():
 
 # map operator symbols to corresponding arithmetic operations
 epsilon = 1e-12
-opn = { "+" : operator.add,
-        "-" : operator.sub,
-        "*" : operator.mul,
-        "/" : operator.truediv,
-        "^" : operator.pow }
-fn  = { "sin" : math.sin,
-        "cos" : math.cos,
-        "tan" : math.tan,
-        "abs" : abs,
-        "trunc" : lambda a: int(a),
-        "round" : round,
-        "sgn" : lambda a: abs(a)>epsilon and cmp(a,0) or 0}
-def evaluateStack( s, t, y ):
+opn = { "+" : "operator.add",
+        "-" : "operator.sub",
+        "*" : "operator.mul",
+        "/" : "operator.truediv",
+        "^" : "operator.pow" }
+fn  = { "sin" : "math.sin",
+        "cos" : "math.cos",
+        "tan" : "math.tan",
+        "abs" : "abs",
+        "trunc" : "int",
+        "round" : "round"}
+def evaluateStack( s ):
     op = s.pop()
     if op == 'unary -':
-        return -evaluateStack( s, t, y )
+        return "-" + evaluateStack( s )
     if op in "+-*/^":
-        op2 = evaluateStack( s, t, y )
-        op1 = evaluateStack( s, t, y )
-        return opn[op]( op1, op2 )
+        op2 = evaluateStack( s )
+        op1 = evaluateStack( s )
+        return opn[op] + "(" + op1 + "," + op2 + ")"
     elif op == "PI":
-        return math.pi # 3.1415926535
+        return "math.pi" # 3.1415926535
     elif op == "E":
-        return math.e  # 2.718281828
+        return "math.e"  # 2.718281828
     elif op == "Y":
-        return y
+        return "y"
     elif op == "T":
-        return t
+        return "t"
     elif op in fn:
-        return fn[op]( evaluateStack( s, t, y ) )
+        return fn[op] + "(" + evaluateStack( s ) + ")"
     elif op[0].isalpha():
-        return 0
+        return "0"
     else:
-        return float( op )
+        return str( op )
         
 def parse(s):
     global exprStack
@@ -113,4 +112,6 @@ def parse(s):
     
     BNF().parseString(s)
     
-    return lambda t,y:evaluateStack(exprStack,t,y)
+    s = evaluateStack(exprStack)
+        
+    return lambda t,y:eval(s)
