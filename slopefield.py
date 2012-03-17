@@ -157,14 +157,14 @@ def slopefield(f,xmin=-1,xmax=1,ymin=-1,ymax=1,xticks=20,yticks=20):
             y += dy
         x += dx
 
-def svg_slopefield(f,xmin=-1,xmax=1,ymin=-1,ymax=1,canvas_size=(400,400),
-               xticks=20,yticks=20):
+def svg_slopefield(f,xmin=-1,xmax=1,ymin=-1,ymax=1,xticks=20,yticks=20,
+                   canvas_size=(400,400)):
     """Returns an svg image for a slopefield"""
     canvas = Canvas(xmin,xmax,ymin,ymax,canvas_size)
-    
+
     for line in canvas.svg_head():
         yield line
-        
+
     for tick in slopefield(f,xmin,xmax,ymin,ymax,xticks,yticks):
         yield canvas.svg_tick(tick)
 
