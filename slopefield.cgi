@@ -30,6 +30,7 @@ print
 
 print """<html>
 <head>
+<link rel="stylesheet" type="text/css" href="style.css">
 <title>Slope Field</title>
 
 <script type="text/javascript">
@@ -60,9 +61,12 @@ function validateForm(){
 if fn_str:
     fn = parser.parse(fn_str)
 
+    print '<div id="plot">'
+
     for line in slopefield.svg_slopefield(fn,xmin,xmax,ymin,ymax,xticks,yticks):
         print line
 
+    print '</div>'
 
 print """</body>
 </html>"""

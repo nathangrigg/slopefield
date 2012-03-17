@@ -1,0 +1,19 @@
+body {
+	font-family: Verdana;
+}
+
+h1 {
+	background: green;
+	padding: 20px;
+	margin: -10px;
+}
+
+form {
+	margin: 10px;
+	margin-top: 30px;
+}
+
+#plot {
+	width: 500px;
+	height: 500px;
+}
