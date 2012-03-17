@@ -1,11 +1,16 @@
+@charset "US-ASCII";
+
 body {
 	font-family: Verdana;
+	width: 800px;
+	margin: 0 auto;
 }
 
 h1 {
-	background: green;
-	padding: 20px;
-	margin: -10px;
+	background: #483D8B;
+	padding: 15px;
+	margin: 0px;
+	color: white;
 }
 
 form {
@@ -14,6 +19,29 @@ form {
 }
 
 #plot {
-	width: 500px;
+	width: 800px;
 	height: 500px;
+}
+
+footer {
+	font-size: 70%;
+	margin-top: 4ex;
+}
+
+footer img {
+	vertical-align: text-top;
+}
+
+tr {
+	text-align: right;
+}
+
+input[type="number"] {
+	margin: 0 15px 0 5px;
+}
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
 }
