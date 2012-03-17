@@ -25,12 +25,44 @@ ymax=float(ymax)
 xticks=float(xticks)
 yticks=float(yticks)
 
-fn = parser.parse(fn_str)
-
-#print "Content-Type: text/html;"
-print "Content-Type: image/svg+xml;"
+print "Content-Type: text/html;"
 print
 
-for line in slopefield.svg_slopefield(fn,xmin,xmax,ymin,ymax,xticks,yticks):
-	print line
-        pass
+print """<html>
+<head>
+<title>Slope Field</title>
+
+<script type="text/javascript">
+function validateForm(){
+	return true;
+}
+</script>
+</head>
+
+<body>
+
+<h1>Slope Field by Nathan Grigg</h1>
+
+<form name="form" onsubmit="return validateForm()" method="get">
+<p><label><em>y'</em>(<em>t</em>,<em>y</em>)= <input type="text" name="fn" size=40></label>
+<p>Operations: + - * / ^ Functions: sin,cos,abs Variables: t,y
+<p><label>xmin<input type="text" name="xmin" size=5></label>
+<label>xmax<input type="text" name="xmax" size=5></label>
+<label>xticks<input type="text" name="xticks" size=5></label>
+<p><label>ymin<input type="text" name="ymin" size=5></label>
+<label>ymax<input type="text" name="ymax" size=5></label>
+<label>yticks<input type="text" name="yticks" size=5></label>
+<p><button type="submit">Submit</button>
+</form>
+"""
+
+
+if fn_str:
+    fn = parser.parse(fn_str)
+
+    for line in slopefield.svg_slopefield(fn,xmin,xmax,ymin,ymax,xticks,yticks):
+        print line
+
+
+print """</body>
+</html>"""
