@@ -1,6 +1,6 @@
 #! /usr/bin/python
 
-__DEBUG = True
+__DEBUG = False
 
 class Canvas:
     def __init__(self,xmin=-1,xmax=1,ymin=-1,ymax=1,canvas_size=(400,400)):
@@ -125,10 +125,13 @@ def tick(x,y,f,length):
         # vertical tick on division by zero
         out = [x, y-0.5*length,
                x, y+0.5*length]
+    except OverflowError:
+        out = [x, y-0.5*length,
+               x, y+0.5*length]
     except:
         # no tick on other error
         if __DEBUG:
-            raise()
+            raise
         else:
             out = [x,y,x,y]
     else:

@@ -76,7 +76,40 @@ html_start="""<!DOCTYPE html>
 html_end="</body>\n</html>"""
 
 def sanitize(fn_str):
-	pass
+	words = re.split(r'[0-9+\-*/^ ()]+',fn_str)
+	for word in words:
+		 if word not in VALID_WORDS:
+		 	error('Unrecognized expression in function: %s' % word)
+
+	s = fn_str.replace('^','**')
+
+	# replace 1.232 with float(1.234)
+	s = re.sub(r'[0-9.]+', r'float(\g<0>)', s)
+
+	try:
+		fn = eval("lambda t,y: " + s)
+	except SyntaxError:
+		error('Syntax Error. Something is wrong with the function you entered.\
+		Common mistakes include writing <tt>3x</tt> instead of <tt>3*x</tt> or\
+		<tt>sin t</tt> instead of <tt>sin(t)</tt>.')
+	except NameError:
+		error('Undefined function: ' + sys.exc_value)
+	except:
+		error('Something is wrong with the function you entered.')
+
+	# sanity check
+	try:
+		output = fn(1.25,1.25)
+	except ValueError:
+		pass
+	except ZeroDivisionError:
+		pass
+	except OverflowError:
+		pass
+	#except:
+	#	error('Something is wrong with the function you entered.' + s)
+
+	return fn
 
 def error(message):
 	print html_start % (fn_str,tmin,tmax,tticks,ymin,ymax,yticks)
