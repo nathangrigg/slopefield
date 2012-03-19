@@ -1,9 +1,28 @@
 #! /usr/bin/python
 
 import cgi
+import sys
+
+storage = cgi.FieldStorage()
+
+# if there are no request parameters, write out static file, if possible
+if len(storage.keys()) == 0:
+    try:
+        f = open('landing.html','r')
+    except:
+        pass
+    else:
+        try:
+            for line in f:
+                print line,
+        finally:
+            f.close()
+            sys.exit()
+
+
+
 import slopefield
 import re
-import sys
 import cgitb
 from math import sin,cos,tan,sqrt,e,pi,log,cosh,sinh,tanh
 
