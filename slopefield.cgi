@@ -75,6 +75,13 @@ html_start="""<!DOCTYPE html>
 </form>
 """
 
+footer = """<footer><p>Want to host this on your own site and/or make changes?
+<a href="https://github.com/nathan11g/slopefield">Get
+the source from GitHub</a>.
+<p>This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution-ShareAlike 3.0 License</a>.
+</footer>
+"""
+
 html_end="</body>\n</html>"""
 
 def sanitize(fn_str):
@@ -149,6 +156,8 @@ for line in slopefield.svg_slopefield(fn,tmin,tmax,ymin,ymax,tticks,yticks):
 	print line
 
 print '</div>'
+
+print footer
 
 print html_end
 
