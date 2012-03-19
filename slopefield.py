@@ -1,18 +1,16 @@
-#! /usr/bin/python
-
 __DEBUG = False
 
 class Canvas:
-    def __init__(self,xmin=-1,xmax=1,ymin=-1,ymax=1,canvas_size=(400,400)):
-        self.xmin=xmin
-        self.xmax=xmax
+    def __init__(self,tmin=-1,tmax=1,ymin=-1,ymax=1,canvas_size=(400,400)):
+        self.tmin=tmin
+        self.tmax=tmax
         self.ymin=ymin
         self.ymax=ymax
         self.canvas_w,self.canvas_h = canvas_size
 
         # make axis ticks and labels
 
-        self.xaxis = [xmin + float(xmax-xmin)*i/10 for i in range(11)]
+        self.xaxis = [tmin + float(tmax-tmin)*i/10 for i in range(11)]
         self.xaxis_label = ["%.3g" % x for x in self.xaxis]
         self.yaxis = [ymin + float(ymax-ymin)*i/10 for i in range(11)]
         self.yaxis_label = ["%.3g" % y for y in self.yaxis]
@@ -23,8 +21,8 @@ class Canvas:
         self.cleft,self.cright = 5*self.yaxis_label_width+5,self.canvas_w-5
 
         # sets up translation from x,y to canvas
-        self.xm = float(self.cright-self.cleft)/(self.xmax-self.xmin)
-        self.xb = self.cleft - self.xm * self.xmin
+        self.xm = float(self.cright-self.cleft)/(self.tmax-self.tmin)
+        self.xb = self.cleft - self.xm * self.tmin
         self.ym = float(self.ctop-self.cbottom)/(self.ymax-self.ymin)
         self.yb = self.cbottom - self.ym * self.ymin
 
@@ -142,31 +140,31 @@ def tick(x,y,f,length):
 
     return out
 
-def slopefield(f,xmin=-1,xmax=1,ymin=-1,ymax=1,xticks=20,yticks=20):
+def slopefield(f,tmin=-1,tmax=1,ymin=-1,ymax=1,tticks=20,yticks=20):
     """Returns a generator for a slopefield"""
-    assert 1 <= xticks <= 50 and 1 <= yticks <= 50
-    dx = float(xmax-xmin)/(xticks+1)
+    assert 1 <= tticks <= 50 and 1 <= yticks <= 50
+    dx = float(tmax-tmin)/(tticks+1)
     dy = float(ymax-ymin)/(yticks+1)
     ticklength = 0.6 * min(dx,dy)
 
     # loop
-    x = xmin + 0.5 * dx
-    while x < xmax:
+    x = tmin + 0.5 * dx
+    while x < tmax:
         y = ymin + 0.5 * dy
         while y < ymax:
             yield tick(x,y,f,ticklength)
             y += dy
         x += dx
 
-def svg_slopefield(f,xmin=-1,xmax=1,ymin=-1,ymax=1,xticks=20,yticks=20,
-                   canvas_size=(400,400)):
+def svg_slopefield(f,tmin=-1,tmax=1,ymin=-1,ymax=1,tticks=20,yticks=20,
+                   canvas_size=(750,500)):
     """Returns an svg image for a slopefield"""
-    canvas = Canvas(xmin,xmax,ymin,ymax,canvas_size)
+    canvas = Canvas(tmin,tmax,ymin,ymax,canvas_size)
 
     for line in canvas.svg_head():
         yield line
 
-    for tick in slopefield(f,xmin,xmax,ymin,ymax,xticks,yticks):
+    for tick in slopefield(f,tmin,tmax,ymin,ymax,tticks,yticks):
         yield canvas.svg_tick(tick)
 
     yield canvas.svg_foot()
