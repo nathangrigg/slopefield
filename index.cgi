@@ -34,6 +34,7 @@ html_start="""<!DOCTYPE html>
 <head>
 <title>Slope Field</title>
 <link rel="stylesheet" type="text/css" href="style.css">
+<meta name="viewport" content="width=800px"/>
 </head>
 
 <body>

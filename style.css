@@ -4,12 +4,14 @@ body {
 	font-family: Verdana;
 	width: 800px;
 	margin: 0 auto;
+	padding-left: 10px;
+	padding-right: 10px;
 }
 
 h1 {
 	background: #483D8B;
-	padding: 15px;
-	margin: 0px;
+	padding: 15px 25px;
+	margin: 0px -10px;
 	color: white;
 }
 
@@ -19,7 +21,7 @@ form {
 }
 
 #plot {
-	width: 800px;
+	width: 760px;
 	height: 500px;
 }
 
