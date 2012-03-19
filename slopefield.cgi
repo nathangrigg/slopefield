@@ -45,8 +45,8 @@ html_start="""<!DOCTYPE html>
 		<input type="text" name="fn" size="50" value="%s"
 		autocorrect="off" autocapitalize="off">
 	</label>
-	<p> Example: <tt>sin(t*pi)+y^2/e^t</tt>
 	<p> You may use: <tt>t y + - * / ^ e pi cos sin tan abs ln acos asin atan cosh sinh tanh</tt>
+	<p> Example: <tt>2*y/tan(2*t)</tt>
 	<p>
 	<table><tr>
 	<td><label>t-min:
@@ -102,7 +102,7 @@ def sanitize(fn_str):
 		Common mistakes include writing <tt>3x</tt> instead of <tt>3*x</tt> or\
 		<tt>sin t</tt> instead of <tt>sin(t)</tt>.')
 	except NameError:
-		error('Undefined function: ' + sys.exc_value)
+		error('Undefined function: %s' % sys.exc_value)
 	except:
 		error('Something is wrong with the function you entered.')
 
@@ -115,14 +115,15 @@ def sanitize(fn_str):
 		pass
 	except OverflowError:
 		pass
-	#except:
-	#	error('Something is wrong with the function you entered.' + s)
+	except:
+		error('Something is wrong with the function you entered.')
 
 	return fn
 
 def error(message):
 	print html_start % (fn_str,tmin,tmax,tticks,ymin,ymax,yticks)
 	print "<p class='alert'>" + message + "</p>"
+	print footer
 	print html_end
 	sys.exit()
 
@@ -144,7 +145,15 @@ if (tmax-tmin)/tticks <= 0 :
 if (ymax-ymin)/yticks <= 0:
 	ymax = ymin + 1
 
-fn = sanitize(fn_str)
+fn_str=cgi.FieldStorage().getfirst("fn")
+
+if fn_str is None:
+	fn_str = ""
+	fn = lambda t,y: 2*y/tan(2*t)
+	title = "y'=2*y/tan(2*t)"
+else:
+	fn = sanitize(fn_str)
+	title = "y'=" + fn_str
 
 # graph output
 
