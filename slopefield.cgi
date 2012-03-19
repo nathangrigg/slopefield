@@ -1,15 +1,21 @@
-#! /usr/bin/python
+#! /usr/local/bin/python2.5
 
 import cgi
 import slopefield
 import re
+import sys
 import cgitb
+from math import sin,cos,tan,sqrt
+
+VALID_WORDS = ['','sin','cos','tan','t','y','abs','sqrt']
 
 cgitb.enable()
 
+print "Content-Type: text/html;\n"
+
 def cgi_get(name,default,convert=float):
 	"""Gets the cgi value and converts it, with a default value on error"""
-	field_str = cgi.FieldStorage.getfirst(name,str(default))
+	field_str = cgi.FieldStorage().getfirst(name,str(default))
 	try:
 		value = convert(field_str)
 	except ValueError:
@@ -73,16 +79,14 @@ def sanitize(fn_str):
 	pass
 
 def error(message):
-	print "Content-Type: text/html;"
-	print
-	print html_start % (fn_str,tmin,tmax,tticks,ymin,ymax,ytics)
-	print "<p class='alert'>" & message & "</p>"
+	print html_start % (fn_str,tmin,tmax,tticks,ymin,ymax,yticks)
+	print "<p class='alert'>" + message + "</p>"
 	print html_end
 	sys.exit()
 
 
 # extract values
-fn_str=getfirst("fn","t+y")
+fn_str=cgi.FieldStorage().getfirst("fn","t+y")
 
 tmin = cgi_get("tmin",0)
 tmax = cgi_get("tmax",2)
@@ -98,16 +102,15 @@ if (tmax-tmin)/tticks <= 0 :
 if (ymax-ymin)/yticks <= 0:
 	ymax = ymin + 1
 
-
 fn = sanitize(fn_str)
 
 # graph output
 
-print html_start % (fn_str,tmin,tmax,tticks,ymin,ymax,ytics)
+print html_start % (fn_str,tmin,tmax,tticks,ymin,ymax,yticks)
 
 print '<div id="plot">'
 
-for line in slopefield.svg_slopefield(fn,xmin,xmax,ymin,ymax,xticks,yticks):
+for line in slopefield.svg_slopefield(fn,tmin,tmax,ymin,ymax,tticks,yticks):
 	print line
 
 print '</div>'
