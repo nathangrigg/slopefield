@@ -21,11 +21,7 @@ def clip(value,left,right):
 	"""Forces value to be within the range [left, right]"""
 	return min(right,max(left,value))
 
-
-print "Content-Type: text/html;"
-print
-
-print """<!DOCTYPE html>
+html_start="""<!DOCTYPE html>
 <html>
 <head>
 <title>Slope Field</title>
@@ -38,38 +34,40 @@ print """<!DOCTYPE html>
 <form name="form" method="get">
 	<p>
 	<label><em>y'</em>(<em>t</em>,<em>y</em>) =
-		<input type="text" name="fn" size=50
+		<input type="text" name="fn" size="50" value="%s"
 		autocorrect="off" autocapitalize="off">
 	</label>
 	<p> Example: <tt>sin(t*pi)+y^2/e^t</tt>
-	<p> You may use: <tt>t y + - * / ^ e pi sin cos abs</tt>
+	<p> You may use: <tt>t y + - * / ^ e pi sin cos tan abs</tt>
 	<p>
 	<table><tr>
 	<td><label>t-min:
-		<input type="number" name="tmin" size="5" value="0">
+		<input type="number" name="tmin" size="5" value="%g">
 	</label></td>
 	<td><label>t-max:
-		<input type="number" name="tmax" size="5" value="2">
+		<input type="number" name="tmax" size="5" value="%g">
 	</label></td>
 	<td><label>t-ticks:
-		<input type="number" name="tticks" size="5" value="30"
+		<input type="number" name="tticks" size="5" value="%d"
 		min="10" max="40">
 	</label></td>
 	</tr><tr>
 	<td><label>y-min:
-		<input type="number" name="ymin" size=5 value="-1">
+		<input type="number" name="ymin" size=5 value="%g">
 	</label></td>
 	<td><label>y-max:
-		<input type="number" name="ymax" size=5 value="1">
+		<input type="number" name="ymax" size=5 value="%g">
 	</label></td>
 	<td><label>y-ticks:
-		<input type="number" name="yticks" size=5 value="30"
+		<input type="number" name="yticks" size=5 value="%d"
 		min="10" max="40">
 	</label></td>
 	</table>
 	<p><button type="submit">Draw the slope field</button>
 </form>
 """
+
+html_end="</body>\n</html>"""
 
 # extract values
 fn_str=getfirst("fn","t+y")
@@ -92,12 +90,16 @@ if (ymax-ymin)/yticks <= 0:
 if fn_str:
     fn = parser.parse(fn_str)
 
-    print '<div id="plot">'
+# graph output
 
-    for line in slopefield.svg_slopefield(fn,xmin,xmax,ymin,ymax,xticks,yticks):
-        print line
+print html_start % (fn_str,tmin,tmax,tticks,ymin,ymax,ytics)
 
-    print '</div>'
+print '<div id="plot">'
 
-print """</body>
-</html>"""
+for line in slopefield.svg_slopefield(fn,xmin,xmax,ymin,ymax,xticks,yticks):
+	print line
+
+print '</div>'
+
+print html_end
+
