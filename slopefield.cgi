@@ -1,13 +1,15 @@
-#! /usr/local/bin/python2.5
+#! /usr/bin/python
 
 import cgi
 import slopefield
 import re
 import sys
 import cgitb
-from math import sin,cos,tan,sqrt
+from math import sin,cos,tan,sqrt,e,pi,log,cosh,sinh,tanh
 
-VALID_WORDS = ['','sin','cos','tan','t','y','abs','sqrt']
+VALID_WORDS = ['','sin','cos','tan','t','y','abs','sqrt','e','pi','log','ln',
+	'acos','asin','atan','cosh','sinh','tanh']
+ln = log
 
 cgitb.enable()
 
@@ -44,7 +46,7 @@ html_start="""<!DOCTYPE html>
 		autocorrect="off" autocapitalize="off">
 	</label>
 	<p> Example: <tt>sin(t*pi)+y^2/e^t</tt>
-	<p> You may use: <tt>t y + - * / ^ e pi sin cos tan abs</tt>
+	<p> You may use: <tt>t y + - * / ^ e pi cos sin tan abs ln acos asin atan cosh sinh tanh</tt>
 	<p>
 	<table><tr>
 	<td><label>t-min:
