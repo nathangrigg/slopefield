@@ -1,12 +1,14 @@
 __DEBUG = False
 
 class Canvas:
-    def __init__(self,tmin=-1,tmax=1,ymin=-1,ymax=1,canvas_size=(400,400)):
+    def __init__(self,tmin=-1,tmax=1,ymin=-1,ymax=1,
+      canvas_size=(400,400),title=""):
         self.tmin=tmin
         self.tmax=tmax
         self.ymin=ymin
         self.ymax=ymax
         self.canvas_w,self.canvas_h = canvas_size
+        self.title = title
 
         # make axis ticks and labels
 
@@ -17,8 +19,8 @@ class Canvas:
         self.yaxis_label_width = max([len(label) for label in self.yaxis_label])
 
         # adjust for labels
-        self.ctop,self.cbottom = 5,self.canvas_h - 15
-        self.cleft,self.cright = 5*self.yaxis_label_width+5,self.canvas_w-5
+        self.ctop,self.cbottom = 15,self.canvas_h - 15
+        self.cleft,self.cright = 5*self.yaxis_label_width+5,self.canvas_w-15
 
         # sets up translation from x,y to canvas
         self.xm = float(self.cright-self.cleft)/(self.tmax-self.tmin)
@@ -64,7 +66,7 @@ class Canvas:
         """Creates a box with axis labels"""
 
         # the box
-        yield '<g style="stroke-width:0.5; stroke:black;">'
+        yield '<g style="stroke-width:1; stroke:grey;">'
         yield '<line x1="%s" y1="%s" x2="%s" y2="%s" />' % \
               (self.cleft,self.ctop,self.cleft,self.cbottom+2)
         yield '<line x1="%s" y1="%s" x2="%s" y2="%s" />' % \
@@ -73,6 +75,12 @@ class Canvas:
               (self.cright,self.cbottom+2,self.cright,self.ctop)
         yield '<line x1="%s" y1="%s" x2="%s" y2="%s" />' % \
               (self.cleft-2,self.ctop,self.cright,self.ctop)
+        #if self.tmin < 0 < self.tmax:
+        #    yield '<line x1="%s" y1="%s" x2="%s" y2="%s" />' % \
+        #      (self.translate_x(0),self.ctop,self.translate_x(0),self.cbottom)
+        #if self.ymin < 0 < self.ymax:
+        #    yield '<line x1="%s" y1="%s" x2="%s" y2="%s" />' % \
+        #      (self.cleft,self.translate_y(0),self.cright,self.translate_y(0))
 
 
         # the ticks
@@ -102,6 +110,10 @@ class Canvas:
         for value,label in zip(self.xaxis,self.xaxis_label):
             yield '<text x="%s" y="%s">%s</text>' % \
             (self.translate_x(value),self.canvas_h,label)
+
+        # and the title
+        yield '<text x="%s" y="%s">%s</text>' % \
+          (float(self.cright-self.ctop)/2,self.ctop-5,self.title)
         yield '</g>'
 
         # the y axis labels
@@ -111,8 +123,6 @@ class Canvas:
             yield '<text x="%d" y="%s">%s</text>' % \
             (self.yaxis_label_width*5,self.translate_y(value)+4,label)
         yield '</g>'
-
-
 
 
 def tick(x,y,f,length):
@@ -157,9 +167,9 @@ def slopefield(f,tmin=-1,tmax=1,ymin=-1,ymax=1,tticks=20,yticks=20):
         x += dx
 
 def svg_slopefield(f,tmin=-1,tmax=1,ymin=-1,ymax=1,tticks=20,yticks=20,
-                   canvas_size=(750,500)):
+                   canvas_size=(750,500),title=""):
     """Returns an svg image for a slopefield"""
-    canvas = Canvas(tmin,tmax,ymin,ymax,canvas_size)
+    canvas = Canvas(tmin,tmax,ymin,ymax,canvas_size,title)
 
     for line in canvas.svg_head():
         yield line

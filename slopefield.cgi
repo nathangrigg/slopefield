@@ -159,7 +159,8 @@ print html_start % (fn_str,tmin,tmax,tticks,ymin,ymax,yticks)
 
 print '<div id="plot">'
 
-for line in slopefield.svg_slopefield(fn,tmin,tmax,ymin,ymax,tticks,yticks):
+for line in slopefield.svg_slopefield(fn,tmin,tmax,ymin,ymax,tticks,yticks,
+  title=title):
 	print line
 
 print '</div>'
