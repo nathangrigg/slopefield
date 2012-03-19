@@ -69,6 +69,15 @@ html_start="""<!DOCTYPE html>
 
 html_end="</body>\n</html>"""
 
+def error(message):
+	print "Content-Type: text/html;"
+	print
+	print html_start % (fn_str,tmin,tmax,tticks,ymin,ymax,ytics)
+	print "<p class='alert'>" & message & "</p>"
+	print html_end
+	sys.exit()
+
+
 # extract values
 fn_str=getfirst("fn","t+y")
 
