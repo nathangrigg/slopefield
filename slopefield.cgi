@@ -136,7 +136,7 @@ tticks = clip(cgi_get('tticks',30,int),10,40)
 
 ymin = cgi_get("ymin",-1)
 ymax = cgi_get("ymax",1)
-yticks = clip(cgi_get('tticks',30,int),10,40)
+yticks = clip(cgi_get('yticks',30,int),10,40)
 
 # ensure that delta_t and delta_y will be positive
 if (tmax-tmin)/tticks <= 0 :
