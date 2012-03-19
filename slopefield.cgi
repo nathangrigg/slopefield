@@ -2,7 +2,7 @@
 
 import cgi
 import slopefield
-import parser
+import re
 import cgitb
 
 cgitb.enable()
@@ -69,6 +69,9 @@ html_start="""<!DOCTYPE html>
 
 html_end="</body>\n</html>"""
 
+def sanitize(fn_str):
+	pass
+
 def error(message):
 	print "Content-Type: text/html;"
 	print
@@ -96,8 +99,7 @@ if (ymax-ymin)/yticks <= 0:
 	ymax = ymin + 1
 
 
-if fn_str:
-    fn = parser.parse(fn_str)
+fn = sanitize(fn_str)
 
 # graph output
 
