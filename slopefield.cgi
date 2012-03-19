@@ -129,11 +129,9 @@ def error(message):
 
 
 # extract values
-fn_str=cgi.FieldStorage().getfirst("fn","t+y")
-
 tmin = cgi_get("tmin",0)
-tmax = cgi_get("tmax",2)
-tticks = clip(cgi_get('tticks',30,int),10,40)
+tmax = cgi_get("tmax",3)
+tticks = clip(cgi_get('tticks',40,int),10,50)
 
 ymin = cgi_get("ymin",-1)
 ymax = cgi_get("ymax",1)
