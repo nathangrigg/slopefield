@@ -106,7 +106,7 @@ the source from GitHub</a>.
 html_end="</body>\n</html>"""
 
 def sanitize(fn_str):
-	words = re.split(r'[0-9+\-*/^ ()]+',fn_str)
+	words = re.split(r'[0-9.+\-*/^ ()]+',fn_str)
 	for word in words:
 		 if word not in VALID_WORDS:
 		 	error('Unrecognized expression in function: %s' % word)
