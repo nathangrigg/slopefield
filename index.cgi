@@ -31,12 +31,11 @@ VALID_WORDS = ['','sin','cos','tan','t','y','abs','sqrt','e','pi','log','ln',
 ln = log
 
 cgitb.enable()
-
 print "Content-Type: text/html;\n"
 
 def cgi_get(name,default,convert=float):
 	"""Gets the cgi value and converts it, with a default value on error"""
-	field_str = cgi.FieldStorage().getfirst(name,str(default))
+	field_str = storage.getfirst(name,str(default))
 	try:
 		value = convert(field_str)
 	except ValueError:
@@ -163,7 +162,7 @@ if (tmax-tmin)/tticks <= 0 :
 if (ymax-ymin)/yticks <= 0:
 	ymax = ymin + 1
 
-fn_str=cgi.FieldStorage().getfirst("fn")
+fn_str=storage.getfirst("fn")
 
 if fn_str is None:
 	fn_str = ""
