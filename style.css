@@ -40,6 +40,7 @@ tr {
 
 input[type="number"] {
 	margin: 0 15px 0 5px;
+	width: 55px;
 }
 
 input::-webkit-outer-spin-button,
