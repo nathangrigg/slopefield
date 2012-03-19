@@ -87,14 +87,16 @@ html_start="""<!DOCTYPE html>
 	</label></td>
 	<td><label>y-ticks:
 		<input type="number" name="yticks" size=5 value="%d"
-		min="10" max="40">
+		min="10" max="50">
 	</label></td>
 	</table>
 	<p><button type="submit">Draw the slope field</button>
 </form>
 """
 
-footer = """<footer><p>Want to host this on your own site and/or make changes?
+footer = """<footer>
+<p>This page requires an up-to-date internet browser.
+<p>Want to host this on your own site and/or make changes?
 <a href="https://github.com/nathan11g/slopefield">Get
 the source from GitHub</a>.
 <p>This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution-ShareAlike 3.0 License</a>.
