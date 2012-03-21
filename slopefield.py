@@ -1,5 +1,3 @@
-__DEBUG = False
-
 class Canvas:
     def __init__(self,tmin=-1,tmax=1,ymin=-1,ymax=1,
       canvas_size=(400,400),title=""):
@@ -124,7 +122,6 @@ class Canvas:
             (self.yaxis_label_width*5,self.translate_y(value)+4,label)
         yield '</g>'
 
-
 def tick(x,y,f,length):
     """Returns a tick centered at x,y with slope f(x,y) and given length"""
     try:
@@ -137,11 +134,7 @@ def tick(x,y,f,length):
         out = [x, y-0.5*length,
                x, y+0.5*length]
     except:
-        # no tick on other error
-        if __DEBUG:
-            raise
-        else:
-            out = [x,y,x,y]
+        out = [x,y,x,y]
     else:
         norm = (1+slope**2)**0.5
         vx = 0.5 * length / norm

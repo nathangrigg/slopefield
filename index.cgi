@@ -30,9 +30,6 @@ VALID_WORDS = ['','sin','cos','tan','t','y','abs','sqrt','e','pi','log','ln',
 	'acos','asin','atan','cosh','sinh','tanh']
 ln = log
 
-cgitb.enable()
-print "Content-Type: text/html;\n"
-
 def cgi_get(name,default,convert=float):
 	"""Gets the cgi value and converts it, with a default value on error"""
 	field_str = storage.getfirst(name,str(default))
@@ -46,6 +43,49 @@ def cgi_get(name,default,convert=float):
 def clip(value,left,right):
 	"""Forces value to be within the range [left, right]"""
 	return min(right,max(left,value))
+
+def sanitize(fn_str):
+	words = re.split(r'[0-9.+\-*/^ ()]+',fn_str)
+	for word in words:
+		 if word not in VALID_WORDS:
+		 	error('Unrecognized expression in function: %s' % word)
+
+	s = fn_str.replace('^','**')
+
+	# replace 1.232 with float(1.234)
+	s = re.sub(r'[0-9.]+', r'float(\g<0>)', s)
+
+	try:
+		fn = eval("lambda t,y: " + s)
+	except SyntaxError:
+		error('Syntax Error. Something is wrong with the function you entered.\
+		Common mistakes include writing <tt>3x</tt> instead of <tt>3*x</tt> or\
+		<tt>sin t</tt> instead of <tt>sin(t)</tt>.')
+	except NameError:
+		error('Undefined function: %s' % sys.exc_value)
+	except:
+		error('Something is wrong with the function you entered.')
+
+	# sanity check
+	try:
+		output = fn(1.25,1.25)
+	except ValueError:
+		pass
+	except ZeroDivisionError:
+		pass
+	except OverflowError:
+		pass
+	except:
+		error('Something is wrong with the function you entered.')
+
+	return fn
+
+def error(message):
+	print html_start % (fn_str,tmin,tmax,tticks,ymin,ymax,yticks)
+	print "<p class='alert'>" + message + "</p>"
+	print footer
+	print html_end
+	sys.exit()
 
 html_start="""<!DOCTYPE html>
 <html>
@@ -105,49 +145,10 @@ the source from GitHub</a>.
 
 html_end="</body>\n</html>"""
 
-def sanitize(fn_str):
-	words = re.split(r'[0-9.+\-*/^ ()]+',fn_str)
-	for word in words:
-		 if word not in VALID_WORDS:
-		 	error('Unrecognized expression in function: %s' % word)
+# begin execution
 
-	s = fn_str.replace('^','**')
-
-	# replace 1.232 with float(1.234)
-	s = re.sub(r'[0-9.]+', r'float(\g<0>)', s)
-
-	try:
-		fn = eval("lambda t,y: " + s)
-	except SyntaxError:
-		error('Syntax Error. Something is wrong with the function you entered.\
-		Common mistakes include writing <tt>3x</tt> instead of <tt>3*x</tt> or\
-		<tt>sin t</tt> instead of <tt>sin(t)</tt>.')
-	except NameError:
-		error('Undefined function: %s' % sys.exc_value)
-	except:
-		error('Something is wrong with the function you entered.')
-
-	# sanity check
-	try:
-		output = fn(1.25,1.25)
-	except ValueError:
-		pass
-	except ZeroDivisionError:
-		pass
-	except OverflowError:
-		pass
-	except:
-		error('Something is wrong with the function you entered.')
-
-	return fn
-
-def error(message):
-	print html_start % (fn_str,tmin,tmax,tticks,ymin,ymax,yticks)
-	print "<p class='alert'>" + message + "</p>"
-	print footer
-	print html_end
-	sys.exit()
-
+cgitb.enable()
+print "Content-Type: text/html;\n"
 
 # extract values
 tmin = cgi_get("tmin",0)
@@ -164,6 +165,8 @@ if (tmax-tmin)/tticks <= 0 :
 if (ymax-ymin)/yticks <= 0:
 	ymax = ymin + 1
 
+# get the function and sanitize
+
 fn_str=storage.getfirst("fn")
 
 if fn_str is None:
@@ -174,7 +177,7 @@ else:
 	fn = sanitize(fn_str)
 	title = "y'=" + fn_str
 
-# graph output
+# print the graph
 
 print html_start % (fn_str,tmin,tmax,tticks,ymin,ymax,yticks)
 
