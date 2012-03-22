@@ -253,8 +253,10 @@ def svg_slopefield(form,canvas_size=(750,500)):
     for line in canvas.svg_head():
         yield line
 
-    for tick in slopefield(form):
+    for i,tick in enumerate(slopefield(form)):
         yield canvas.svg_tick(tick)
+        if i>3000:
+            raise Exception("3000 ticks and counting. Infinite loop?")
 
     yield canvas.svg_foot()
 
