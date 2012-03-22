@@ -331,7 +331,7 @@ the source from GitHub</a>.
 def cgi_output(cgi_input,log_file=None):
     """Generator for cgi output, one line at a time."""
 
-    yield "Content-Type: text/html;\n"
+    yield "Content-Type: text/html\r\n\r"
 
     form = parse_form(cgi_input,log_file)
 
