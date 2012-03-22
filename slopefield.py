@@ -140,14 +140,15 @@ class Canvas:
 
     def svg_tick(self,tick):
         """Returns a line of svg representing the tick"""
-        return '<line x1 = "%.03f" y1 = "%.03f" x2 = "%.03f" y2 = "%.03f" />' \
+        return '<line x1 = "%.01f" y1 = "%.01f" x2 = "%.01f" y2 = "%.01f" />' \
                % tuple(self.translate_tick(tick))
 
     def svg_head(self):
-        yield """<svg viewBox="0 0 %d %d"
+        yield """<svg viewBox="0 0 %(w)d %(h)d"
+ width="%(w)d" height="%(h)d"
  xmlns="http://www.w3.org/2000/svg"
- xmlns:xlink="http://www.w3.org/1999/xlink">""" % (self.canvas_w,
-                                                   self.canvas_h)
+ xmlns:xlink="http://www.w3.org/1999/xlink">""" % {'w':self.canvas_w,
+                                                   'h':self.canvas_h}
         for line in self.axes():
             yield line
 
