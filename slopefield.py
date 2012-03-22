@@ -114,7 +114,7 @@ class Canvas:
 
         # adjust for labels
         self.ctop,self.cbottom = 15,self.canvas_h - 15
-        self.cleft,self.cright = 5*self.yaxis_label_width+5,self.canvas_w-15
+        self.cleft,self.cright = 6*self.yaxis_label_width+6,self.canvas_w-15
 
         # sets up translation from x,y to canvas
         self.tm = float(self.cright-self.cleft)/(form['tmax']-form['tmin'])
@@ -207,7 +207,7 @@ class Canvas:
          style="text-anchor:end;">'
         for value,label in zip(self.yaxis,self.yaxis_label):
             yield '<text x="%d" y="%s">%s</text>' % \
-            (self.yaxis_label_width*5,self.translate_y(value)+4,label)
+            (self.yaxis_label_width*6,self.translate_y(value)+4,label)
         yield '</g>'
 
 def tick(t,y,f,length):
