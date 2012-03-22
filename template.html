@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Slope Field</title>
+	<link rel="stylesheet" type="text/css" href="style.css">
+	<meta name="viewport" content="width=800px"/>
+</head>
+
+<body>
+
+	<h1>
+		Slope Field by Nathan Grigg
+	</h1>
+
+<form name="form" method="get">
+    <p>
+		<label><em>y'</em>(<em>t</em>,<em>y</em>) =
+			<input type="text" name="fn" size="50" value="$fn_str"
+			autocorrect="off" autocapitalize="off">
+		</label>
+    <p> You may use: <tt>t y + - * / ^ e pi cos sin
+    	tan abs ln acos asin atan cosh sinh tanh</tt>
+    <p> Example: <tt>2*y/tan(2*t)</tt>
+    <p><table><tr>
+		<td><label>t-min:
+			<input type="number" name="tmin" size="5" value="$tmin">
+		</label></td>
+		<td><label>t-max:
+			<input type="number" name="tmax" size="5" value="$tmax">
+		</label></td>
+		<td><label>t-ticks:
+			<input type="number" name="tticks" size="5" value="$tticks"
+			min="10" max="40">
+		</label></td>
+		</tr><tr>
+		<td><label>y-min:
+			<input type="number" name="ymin" size=5 value="$ymin">
+		</label></td>
+		<td><label>y-max:
+			<input type="number" name="ymax" size=5 value="$ymax">
+		</label></td>
+		<td><label>y-ticks:
+			<input type="number" name="yticks" size=5 value="$yticks"
+			min="10" max="50">
+		</label></td>
+	</table>
+    <p><button type="submit">
+    	Draw the slope field
+    </button>
+</form>
+
+$content
+
+<footer>
+	<p>This page requires an up-to-date internet browser.
+	<p>Want to host this on your own site and/or make changes?
+	<a href="https://github.com/nathan11g/slopefield">Get
+	the source from GitHub</a>.
+	<p>This work is licensed under a <a rel="license"
+	href="http://creativecommons.org/licenses/by-sa/3.0/">Creative
+	Commons Attribution-ShareAlike 3.0 License</a>.
+</footer>
+
+</body>
+</html>

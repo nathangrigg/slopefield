@@ -1,4 +1,5 @@
 import re
+from string import Template
 from math import sin,cos,tan,sqrt,e,pi,log,cosh,sinh,tanh
 
 VALID_WORDS = ['','sin','cos','tan','t','y','abs','sqrt','e','pi','log','ln',
@@ -270,65 +271,7 @@ def svg_slopefield(f,tmin=-1,tmax=1,ymin=-1,ymax=1,tticks=20,yticks=20,
 
     yield canvas.svg_foot()
 
-html_start="""<!DOCTYPE html>
-<html>
-<head>
-<title>Slope Field</title>
-<link rel="stylesheet" type="text/css" href="style.css">
-<meta name="viewport" content="width=800px"/>
-</head>
-
-<body>
-<h1>Slope Field by Nathan Grigg</h1>
-
-<form name="form" method="get">
-    <p>
-    <label><em>y'</em>(<em>t</em>,<em>y</em>) =
-        <input type="text" name="fn" size="50" value="%(fn_str)s"
-        autocorrect="off" autocapitalize="off">
-    </label>
-    <p> You may use: <tt>t y + - * / ^ e pi cos sin tan abs ln acos asin atan cosh sinh tanh</tt>
-    <p> Example: <tt>2*y/tan(2*t)</tt>
-    <p>
-    <table><tr>
-    <td><label>t-min:
-        <input type="number" name="tmin" size="5" value="%(tmin)g">
-    </label></td>
-    <td><label>t-max:
-        <input type="number" name="tmax" size="5" value="%(tmax)g">
-    </label></td>
-    <td><label>t-ticks:
-        <input type="number" name="tticks" size="5" value="%(tticks)d"
-        min="10" max="40">
-    </label></td>
-    </tr><tr>
-    <td><label>y-min:
-        <input type="number" name="ymin" size=5 value="%(ymin)g">
-    </label></td>
-    <td><label>y-max:
-        <input type="number" name="ymax" size=5 value="%(ymax)g">
-    </label></td>
-    <td><label>y-ticks:
-        <input type="number" name="yticks" size=5 value="%(yticks)d"
-        min="10" max="50">
-    </label></td>
-    </table>
-    <p><button type="submit">Draw the slope field</button>
-</form>
-"""
-
-html_end="""<footer>
-<p>This page requires an up-to-date internet browser.
-<p>Want to host this on your own site and/or make changes?
-<a href="https://github.com/nathan11g/slopefield">Get
-the source from GitHub</a>.
-<p>This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution-ShareAlike 3.0 License</a>.
-</footer>
-</body>\n</html>
-"""
-
-
-def cgi_output(cgi_input,log_file=None):
+def cgi_output(cgi_input,template_file,log_file=None):
     """Generator for cgi output, one line at a time."""
 
     yield "Content-Type: text/html\r\n\r"
@@ -343,16 +286,18 @@ def cgi_output(cgi_input,log_file=None):
         try:
             form['fn'] = sanitize(form['fn_str'],log_file)
         except SanitizeError as msg:
-            yield html_start % form
-            yield "<p class='alert'>" + msg + "</p>"
-            yield html_end
+            form['content'] = "<p class='alert'>" + msg + "</p>"
+            yield Template(open(template_file).read()).safe_substitute(form)
             return
         else:
             form['title'] = "y'=" + form['fn_str']
 
 
     # print the graph
-    yield html_start % form
+    start,end = Template(open(template_file).read()).safe_substitute(form)\
+      .split('$content',1)
+
+    yield start
 
     yield '<div id="plot">'
 
@@ -363,4 +308,4 @@ def cgi_output(cgi_input,log_file=None):
 
     yield '</div>'
 
-    yield html_end
+    yield end
