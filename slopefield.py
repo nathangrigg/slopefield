@@ -1,4 +1,5 @@
 import re
+import functools
 from string import Template
 from math import sin,cos,tan,sqrt,e,pi,log,cosh,sinh,tanh
 
@@ -31,7 +32,7 @@ def parse_form(cgi_input,log_file=None):
     yticks = clip(cgi_get('yticks',30,int),10,40)
 
     # ensure that delta_t and delta_y will be positive
-    if (tmax-tmin)/tticks <= 0 :
+    if (tmax-tmin)/tticks <= 0:
         tmax = tmin + 1
     if (ymax-ymin)/yticks <= 0:
         ymax = ymin + 1
@@ -63,9 +64,9 @@ def sanitize(fn_str,log_file=None):
         fn = eval("lambda t,y: " + s)
     except SyntaxError:
         raise SanitizeError(
-        'Syntax Error. Something is wrong with the function you entered.\
-        Common mistakes include writing <tt>3x</tt> instead of <tt>3*x</tt> or\
-        <tt>sin t</tt> instead of <tt>sin(t)</tt>.')
+        'Syntax Error. Something is wrong with the function you entered. ' + \
+        'Common mistakes include writing <tt>3x</tt> instead of <tt>3*x</tt> '+\
+        ' or <tt>sin t</tt> instead of <tt>sin(t)</tt>.')
     except NameError,S:
         write_log(log_file,fn_str,S,'eval')
         raise SanitizeError(
@@ -97,137 +98,102 @@ def write_log(log_file,fn_str,msg,s):
             f.write("%s\t%s\t%s\n" % (fn_str,msg,s))
             f.close()
 
-class Canvas:
-    def __init__(self,form,canvas_size=(400,400)):
-        self.title = form['title']
-        self.canvas_w,self.canvas_h = canvas_size
+def svg_tick(tick):
+    """Returns a line of svg representing the tick"""
+    return '<line x1 = "%.01f" y1 = "%.01f" x2 = "%.01f" y2 = "%.01f" />' \
+           % tuple(tick)
 
-        # make axis ticks and labels
+def translate(stretch,shift,value,noshift=False):
+    """Performs an affine transformation, optionally skipping the translation"""
+    if noshift:
+        return stretch * value
+    else:
+        return stretch * value + shift
 
-        self.taxis = [form['tmin'] + float(form['tmax']-form['tmin'])*i/10 \
-          for i in range(11)]
-        self.taxis_label = ["%.3g" % t for t in self.taxis]
-        self.yaxis = [form['ymin'] + float(form['ymax']-form['ymin'])*i/10 \
-          for i in range(11)]
-        self.yaxis_label = ["%.3g" % y for y in self.yaxis]
-        self.yaxis_label_width = max([len(label) for label in self.yaxis_label])
+def translation(p1,i1,p2,i2):
+    """Returns the affine translation that takes p1 to i1 and p2 to i2"""
+    stretch = float(i2-i1)/(p2-p1)
+    shift = i1 - stretch * p1
+    return functools.partial(translate,stretch,shift)
 
-        # adjust for labels
-        self.ctop,self.cbottom = 15,self.canvas_h - 15
-        self.cleft,self.cright = 6*self.yaxis_label_width+6,self.canvas_w-15
+translate_t = functools.partial(translate,1,0)
+translate_y = functools.partial(translate,1,0)
 
-        # sets up translation from x,y to canvas
-        self.tm = float(self.cright-self.cleft)/(form['tmax']-form['tmin'])
-        self.tb = self.cleft - self.tm * form['tmin']
-        self.ym = float(self.ctop-self.cbottom)/(form['ymax']-form['ymin'])
-        self.yb = self.cbottom - self.ym * form['ymin']
+def axes(canvas,title=""):
+    """Creates a box with axis labels"""
 
-    def translate_tick(self,tick):
-        x1,y1,x2,y2=tick
-        out = self.translate(x1,y1)
-        out.extend(self.translate(x2,y2))
-        return out
+    # the box
+    yield '<g style="stroke-width:1; stroke:grey;">'
+    yield '<line x1="%s" y1="%s" x2="%s" y2="%s" />' % \
+          (canvas['left'],canvas['top'],canvas['left'],canvas['bottom']+2)
+    yield '<line x1="%s" y1="%s" x2="%s" y2="%s" />' % \
+          (canvas['left']-2,canvas['bottom'],canvas['right'],canvas['bottom'])
+    yield '<line x1="%s" y1="%s" x2="%s" y2="%s" />' % \
+          (canvas['right'],canvas['bottom']+2,canvas['right'],canvas['top'])
+    yield '<line x1="%s" y1="%s" x2="%s" y2="%s" />' % \
+          (canvas['left']-2,canvas['top'],canvas['right'],canvas['top'])
 
-    def translate(self,t,y):
-        """Translates a tick from t,y coords to canvas coords"""
-        return [self.translate_t(t), self.translate_y(y)]
-
-    def translate_t(self,t):
-        return t*self.tm + self.tb
-
-    def translate_y(self,y):
-        return y*self.ym + self.yb
-
-    def svg_tick(self,tick):
-        """Returns a line of svg representing the tick"""
-        return '<line x1 = "%.01f" y1 = "%.01f" x2 = "%.01f" y2 = "%.01f" />' \
-               % tuple(self.translate_tick(tick))
-
-    def svg_head(self):
-        yield """<svg viewBox="0 0 %(w)d %(h)d"
- width="%(w)d" height="%(h)d"
- xmlns="http://www.w3.org/2000/svg"
- xmlns:xlink="http://www.w3.org/1999/xlink">""" % {'w':self.canvas_w,
-                                                   'h':self.canvas_h}
-        for line in self.axes():
-            yield line
-
-        yield '<g style="stroke-width:1; stroke:black;">'
-
-    def svg_foot(self):
-        return "</g></svg>"
-
-    def axes(self):
-        """Creates a box with axis labels"""
-
-        # the box
-        yield '<g style="stroke-width:1; stroke:grey;">'
+    # the axis ticks
+    for t in canvas['taxis'][1:-1]:
         yield '<line x1="%s" y1="%s" x2="%s" y2="%s" />' % \
-              (self.cleft,self.ctop,self.cleft,self.cbottom+2)
+          (translate_t(t),canvas['bottom']-2,
+           translate_t(t),canvas['bottom']+2)
         yield '<line x1="%s" y1="%s" x2="%s" y2="%s" />' % \
-              (self.cleft-2,self.cbottom,self.cright,self.cbottom)
+          (translate_t(t),canvas['top'],
+           translate_t(t),canvas['top']+2)
+
+    for y in canvas['yaxis'][1:-1]:
         yield '<line x1="%s" y1="%s" x2="%s" y2="%s" />' % \
-              (self.cright,self.cbottom+2,self.cright,self.ctop)
+          (canvas['left']-2,translate_y(y),
+           canvas['left']+2,translate_y(y))
         yield '<line x1="%s" y1="%s" x2="%s" y2="%s" />' % \
-              (self.cleft-2,self.ctop,self.cright,self.ctop)
+          (canvas['right']-2,translate_y(y),
+           canvas['right'],translate_y(y))
 
-        # the ticks
-        for t in self.taxis[1:-1]:
-            yield '<line x1="%s" y1="%s" x2="%s" y2="%s" />' % \
-              (self.translate_t(t),self.cbottom-2,
-               self.translate_t(t),self.cbottom+2)
-            yield '<line x1="%s" y1="%s" x2="%s" y2="%s" />' % \
-              (self.translate_t(t),self.ctop,
-               self.translate_t(t),self.ctop+2)
+    yield "</g>"
 
-        for y in self.yaxis[1:-1]:
-            yield '<line x1="%s" y1="%s" x2="%s" y2="%s" />' % \
-              (self.cleft-2,self.translate_y(y),
-               self.cleft+2,self.translate_y(y))
-            yield '<line x1="%s" y1="%s" x2="%s" y2="%s" />' % \
-              (self.cright-2,self.translate_y(y),
-               self.cright,self.translate_y(y))
-
-        yield "</g>"
-
-        # the t axis labels
-        yield '<g font-family="Verdana" font-size="10px"\
-         style="text-anchor: middle;">'
-        for value,label in zip(self.taxis,self.taxis_label):
-            yield '<text x="%s" y="%s">%s</text>' % \
-            (self.translate_t(value),self.canvas_h,label)
-
-        # and the title
+    # the t axis labels
+    yield '<g font-family="Verdana" font-size="10px" ' + \
+     'style="text-anchor: middle;">'
+    for value,label in zip(canvas['taxis'],canvas['taxis_label']):
         yield '<text x="%s" y="%s">%s</text>' % \
-          (float(self.cright-self.ctop)/2,self.ctop-5,self.title)
-        yield '</g>'
+        (translate_t(value),canvas['h'],label)
 
-        # the y axis labels
-        yield '<g font-family="Verdana" font-size="10px"\
-         style="text-anchor:end;">'
-        for value,label in zip(self.yaxis,self.yaxis_label):
-            yield '<text x="%d" y="%s">%s</text>' % \
-            (self.yaxis_label_width*6,self.translate_y(value)+4,label)
-        yield '</g>'
+    # and the title
+    yield '<text x="%s" y="%s">%s</text>' % \
+      (float(canvas['right']-canvas['top'])/2,canvas['top']-5,title)
+    yield '</g>'
+
+    # the y axis labels
+    yield '<g font-family="Verdana" font-size="10px" ' + \
+     'style="text-anchor:end;">'
+    for value,label in zip(canvas['yaxis'],canvas['yaxis_label']):
+        yield '<text x="%d" y="%s">%s</text>' % \
+        (canvas['left']-6,translate_y(value)+4,label)
+    yield '</g>'
 
 def tick(t,y,f,length):
     """Returns a tick centered at t,y with slope f(t,y) and given length"""
+    tt = translate_t(t)
+    yy = translate_y(y)
     try:
         slope = f(t,y)
     except ZeroDivisionError:
         # vertical tick on division by zero
-        out = [t, y-0.5*length,
-               t, y+0.5*length]
+        out = [tt, yy-0.5*length,
+               tt, yy+0.5*length]
     except OverflowError:
-        out = [t, y-0.5*length,
-               t, y+0.5*length]
+        out = [tt, yy-0.5*length,
+               tt, yy+0.5*length]
     except:
-        out = [t,y,t,y]
+        out = [tt,yy,tt,yy]
     else:
-        norm = (1+slope**2)**0.5
-        vt = 0.5 * length / norm
-        vy = 0.5 * slope * length / norm
-        out = [t-vt, y-vy, t+vt, y+vy]
+        vt =  translate_t(1,noshift=True)
+        vy =  translate_y(slope,noshift=True)
+        norm = (vt**2 + vy**2)**0.5
+        vt *= 0.5 * length / norm
+        vy *= 0.5 * length / norm
+        out = [tt-vt,yy-vy,tt+vt,yy+vy]
 
     return out
 
@@ -235,7 +201,8 @@ def slopefield(form):
     """Returns a generator for a slopefield"""
     dt = float(form['tmax']-form['tmin'])/(form['tticks']+1)
     dy = float(form['ymax']-form['ymin'])/(form['yticks']+1)
-    ticklength = 0.6 * min(dt,dy)
+    ticklength = 0.6 * min(translate_t(dt,noshift=True),
+                           translate_y(dy,noshift=True))
 
     # loop
     t = form['tmin'] + 0.5 * dt
@@ -246,19 +213,49 @@ def slopefield(form):
             y += dy
         t += dt
 
-def svg_slopefield(form,canvas_size=(750,500)):
-    """Returns an svg image for a slopefield"""
-    canvas = Canvas(form,canvas_size)
+def canvas_dimensions(form,canvas_size=(750,500)):
+    """calculate dimensions of the canvas, making room for axes"""
+    w,h = canvas_size
 
-    for line in canvas.svg_head():
+    # make axis ticks and labels
+    taxis = [form['tmin'] + float(form['tmax']-form['tmin'])*i/10 \
+      for i in range(11)]
+    taxis_label = ["%.3g" % t for t in taxis]
+    yaxis = [form['ymin'] + float(form['ymax']-form['ymin'])*i/10 \
+      for i in range(11)]
+    yaxis_label = ["%.3g" % y for y in yaxis]
+    yaxis_label_width = max([len(label) for label in yaxis_label])
+
+    # adjust canvas for labels
+    top,bottom = 15,h - 15
+    left,right = 6*yaxis_label_width+6,w-15
+
+    return {'top':top, 'left':left, 'bottom':bottom, 'right': right,
+        'w':w, 'h':h, 'taxis':taxis, 'taxis_label':taxis_label,
+        'yaxis':yaxis, 'yaxis_label':yaxis_label}
+
+def svg_slopefield(canvas,slopefield_generator,title=""):
+    """Returns an svg image for a slopefield"""
+
+    # beginning of svg
+    yield """<svg viewBox="0 0 %(w)d %(h)d"
+width="%(w)d" height="%(h)d"
+xmlns="http://www.w3.org/2000/svg"
+xmlns:xlink="http://www.w3.org/1999/xlink">""" % canvas
+
+    for line in axes(canvas,title):
         yield line
 
-    for i,tick in enumerate(slopefield(form)):
-        yield canvas.svg_tick(tick)
+    # style for tick marks
+    yield '<g style="stroke-width:1; stroke:black;">'
+
+    for i,tick in enumerate(slopefield_generator):
+        yield svg_tick(tick)
         if i>3000:
             raise Exception("3000 ticks and counting. Infinite loop?")
 
-    yield canvas.svg_foot()
+    # close out svg
+    yield "</g></svg>"
 
 def cgi_output(cgi_input,template_file,log_file=None):
     """Generator for cgi output, one line at a time."""
@@ -282,7 +279,24 @@ def cgi_output(cgi_input,template_file,log_file=None):
             form['title'] = "y'=" + form['fn_str']
 
 
-    # print the graph
+    # set up the canvas
+
+    canvas = canvas_dimensions(form,canvas_size=(750,500))
+
+    # calculate the translation factors based on canvas dimensions
+    global translate_t,translate_y
+    translate_t = translation(form['tmin'],canvas['left'],
+                              form['tmax'],canvas['right'])
+    translate_y = translation(form['ymin'],canvas['bottom'],
+                              form['ymax'],canvas['top'])
+
+    # get a generator for the slopefield
+    slopefield_generator = slopefield(form)
+
+    svg_generator = svg_slopefield(canvas,slopefield_generator,form['title'])
+
+    # print it out
+
     start,end = Template(open(template_file).read()).safe_substitute(form)\
       .split('$content',1)
 
@@ -290,7 +304,7 @@ def cgi_output(cgi_input,template_file,log_file=None):
 
     yield '<div id="plot">'
 
-    for line in svg_slopefield(form):
+    for line in svg_generator:
         yield line
 
     yield '</div>'
