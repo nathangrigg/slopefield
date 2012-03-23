@@ -1,4 +1,5 @@
 import re
+import functools
 from string import Template
 from math import sin,cos,tan,sqrt,e,pi,log,cosh,sinh,tanh
 
@@ -31,7 +32,7 @@ def parse_form(cgi_input,log_file=None):
     yticks = clip(cgi_get('yticks',30,int),10,40)
 
     # ensure that delta_t and delta_y will be positive
-    if (tmax-tmin)/tticks <= 0 :
+    if (tmax-tmin)/tticks <= 0:
         tmax = tmin + 1
     if (ymax-ymin)/yticks <= 0:
         ymax = ymin + 1
@@ -63,9 +64,9 @@ def sanitize(fn_str,log_file=None):
         fn = eval("lambda t,y: " + s)
     except SyntaxError:
         raise SanitizeError(
-        'Syntax Error. Something is wrong with the function you entered.\
-        Common mistakes include writing <tt>3x</tt> instead of <tt>3*x</tt> or\
-        <tt>sin t</tt> instead of <tt>sin(t)</tt>.')
+        'Syntax Error. Something is wrong with the function you entered. ' + \
+        'Common mistakes include writing <tt>3x</tt> instead of <tt>3*x</tt> '+\
+        ' or <tt>sin t</tt> instead of <tt>sin(t)</tt>.')
     except NameError,S:
         write_log(log_file,fn_str,S,'eval')
         raise SanitizeError(
@@ -162,6 +163,15 @@ class Canvas:
 
         # the box
         yield '<g style="stroke-width:1; stroke:grey;">'
+def translation(p1,i1,p2,i2):
+    """Returns the affine translation that takes p1 to i1 and p2 to i2"""
+    stretch = float(i2-i1)/(p2-p1)
+    shift = i1 - stretch * p1
+    return functools.partial(translate,stretch,shift)
+
+translate_t = functools.partial(translate,1,0)
+translate_y = functools.partial(translate,1,0)
+
         yield '<line x1="%s" y1="%s" x2="%s" y2="%s" />' % \
               (self.cleft,self.ctop,self.cleft,self.cbottom+2)
         yield '<line x1="%s" y1="%s" x2="%s" y2="%s" />' % \
