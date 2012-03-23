@@ -174,22 +174,26 @@ def axes(canvas,title=""):
 
 def tick(t,y,f,length):
     """Returns a tick centered at t,y with slope f(t,y) and given length"""
+    tt = translate_t(t)
+    yy = translate_y(y)
     try:
         slope = f(t,y)
     except ZeroDivisionError:
         # vertical tick on division by zero
-        out = [t, y-0.5*length,
-               t, y+0.5*length]
+        out = [tt, yy-0.5*length,
+               tt, yy+0.5*length]
     except OverflowError:
-        out = [t, y-0.5*length,
-               t, y+0.5*length]
+        out = [tt, yy-0.5*length,
+               tt, yy+0.5*length]
     except:
-        out = [t,y,t,y]
+        out = [tt,yy,tt,yy]
     else:
-        norm = (1+slope**2)**0.5
-        vt = 0.5 * length / norm
-        vy = 0.5 * slope * length / norm
-        out = [t-vt, y-vy, t+vt, y+vy]
+        vt =  translate_t(1,noshift=True)
+        vy =  translate_y(slope,noshift=True)
+        norm = (vt**2 + vy**2)**0.5
+        vt *= 0.5 * length / norm
+        vy *= 0.5 * length / norm
+        out = [tt-vt,yy-vy,tt+vt,yy+vy]
 
     return out
 
@@ -197,7 +201,8 @@ def slopefield(form):
     """Returns a generator for a slopefield"""
     dt = float(form['tmax']-form['tmin'])/(form['tticks']+1)
     dy = float(form['ymax']-form['ymin'])/(form['yticks']+1)
-    ticklength = 0.6 * min(dt,dy)
+    ticklength = 0.6 * min(translate_t(dt,noshift=True),
+                           translate_y(dy,noshift=True))
 
     # loop
     t = form['tmin'] + 0.5 * dt
