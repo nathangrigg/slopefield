@@ -279,7 +279,24 @@ def cgi_output(cgi_input,template_file,log_file=None):
             form['title'] = "y'=" + form['fn_str']
 
 
-    # print the graph
+    # set up the canvas
+
+    canvas = canvas_dimensions(form,canvas_size=(750,500))
+
+    # calculate the translation factors based on canvas dimensions
+    global translate_t,translate_y
+    translate_t = translation(form['tmin'],canvas['left'],
+                              form['tmax'],canvas['right'])
+    translate_y = translation(form['ymin'],canvas['bottom'],
+                              form['ymax'],canvas['top'])
+
+    # get a generator for the slopefield
+    slopefield_generator = slopefield(form)
+
+    svg_generator = svg_slopefield(canvas,slopefield_generator,form['title'])
+
+    # print it out
+
     start,end = Template(open(template_file).read()).safe_substitute(form)\
       .split('$content',1)
 
@@ -287,7 +304,7 @@ def cgi_output(cgi_input,template_file,log_file=None):
 
     yield '<div id="plot">'
 
-    for line in svg_slopefield(form):
+    for line in svg_generator:
         yield line
 
     yield '</div>'
