@@ -199,8 +199,8 @@ def tick(t,y,f,length):
 
 def slopefield(form):
     """Returns a generator for a slopefield"""
-    dt = float(form['tmax']-form['tmin'])/(form['tticks']+1)
-    dy = float(form['ymax']-form['ymin'])/(form['yticks']+1)
+    dt = float(form['tmax']-form['tmin'])/form['tticks']
+    dy = float(form['ymax']-form['ymin'])/form['yticks']
     ticklength = 0.6 * min(translate_t(dt,noshift=True),
                            translate_y(dy,noshift=True))
 
