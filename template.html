@@ -18,6 +18,7 @@
 			<input type="text" name="fn" size="50" value="$fn_str"
 			autocorrect="off" autocapitalize="off">
 		</label>
+	<div class="hide-on-print">
     <p> You may use: <tt>t y + - * / ^ e pi cos sin
     	tan abs ln acos asin atan cosh sinh tanh</tt>
     <p> Example: <tt>2*y/tan(2*t)</tt>
@@ -47,11 +48,12 @@
     <p><button type="submit">
     	Draw the slope field
     </button>
+	</div>
 </form>
 
 $content
 
-<footer>
+<footer class="hide-on-print">
 	<p>This page requires an up-to-date internet browser.
 	<p>Want to host this on your own site and/or make changes?
 	<a href="https://github.com/nathan11g/slopefield">Get

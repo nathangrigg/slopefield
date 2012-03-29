@@ -53,3 +53,22 @@ input::-webkit-inner-spin-button {
 	color: red;
 	font-weight: bold;
 }
+
+
+@media print {
+
+h1 {
+	background: white;
+	color: black;
+	font-weight: normal;
+}
+
+.hide-on-print {
+	display: none;
+}
+
+input {
+	border: 0px;
+	border-bottom: 1px solid black;
+}
+}
