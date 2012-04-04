@@ -1,7 +1,7 @@
 import re
 import functools
 from string import Template
-from math import sin,cos,tan,sqrt,e,pi,log,cosh,sinh,tanh
+from math import sin,cos,tan,sqrt,e,pi,log,cosh,sinh,tanh,acos,asin,atan
 
 VALID_WORDS = ['','sin','cos','tan','t','y','abs','sqrt','e','pi','log','ln',
     'acos','asin','atan','cosh','sinh','tanh']
