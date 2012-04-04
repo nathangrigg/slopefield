@@ -81,6 +81,17 @@ def sanitize(fn_str,log_file=None):
         output = fn(1.25,0.75)
     except (ValueError, ZeroDivisionError, OverflowError):
         pass
+    except TypeError,S:
+        if S.message == "'float' object is not callable":
+            raise SanitizeError(
+              'Invalid syntax. Please use explicit multiplication. ' +\
+              '(Bad: 5y. Good: 5*y.)')
+        else:
+            write_log(log_file,fn_str,S,'sanity check')
+            raise SanitizeError(
+              'Something is wrong with the function you entered.')
+
+        
     except Exception,S:
         write_log(log_file,fn_str,S,'sanity check')
         raise SanitizeError(
