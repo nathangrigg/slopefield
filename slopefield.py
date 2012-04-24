@@ -91,7 +91,7 @@ def sanitize(fn_str,log_file=None):
             raise SanitizeError(
               'Something is wrong with the function you entered.')
 
-        
+
     except Exception,S:
         write_log(log_file,fn_str,S,'sanity check')
         raise SanitizeError(
@@ -212,8 +212,8 @@ def slopefield(form):
     """Returns a generator for a slopefield"""
     dt = float(form['tmax']-form['tmin'])/form['tticks']
     dy = float(form['ymax']-form['ymin'])/form['yticks']
-    ticklength = 0.6 * min(translate_t(dt,noshift=True),
-                           translate_y(dy,noshift=True))
+    ticklength = 0.6 * min(abs(translate_t(dt,noshift=True)),
+                           abs(translate_y(dy,noshift=True)))
 
     # loop
     t = form['tmin'] + 0.5 * dt
