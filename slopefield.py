@@ -1,3 +1,4 @@
+from __future__ import division
 import re
 import functools
 from string import Template
@@ -116,7 +117,7 @@ def svg_tick(tick):
 
 def translation(p1,i1,p2,i2):
     """Returns the affine translation that takes p1 to i1 and p2 to i2"""
-    stretch = float(i2-i1)/(p2-p1)
+    stretch = (i2-i1)/(p2-p1)
     shift = i1 - stretch * p1
     return stretch, shift
 
@@ -162,7 +163,7 @@ def axes(canvas,trans,title=""):
 
     # and the title
     yield '<text x="%s" y="%s">%s</text>' % \
-      (float(canvas['right']-canvas['top'])/2,canvas['top']-5,title)
+      ((canvas['right']-canvas['top'])/2,canvas['top']-5,title)
     yield '</g>'
 
     # the y axis labels
@@ -197,8 +198,8 @@ def tick(t,y,f,length,trans):
 
 def slopefield(form,trans):
     """Returns a generator for a slopefield"""
-    dt = float(form['tmax']-form['tmin'])/form['tticks']
-    dy = float(form['ymax']-form['ymin'])/form['yticks']
+    dt = (form['tmax']-form['tmin'])/form['tticks']
+    dy = (form['ymax']-form['ymin'])/form['yticks']
     ticklength = 0.6 * min(abs(dt*trans['tm']), abs(dy*trans['ym']))
 
     # loop
