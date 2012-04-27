@@ -5,21 +5,17 @@ import unittest
 
 class TestTick(unittest.TestCase):
     def setUp(self):
-        self.translate_y = sf.translate_y
-        self.translate_t = sf.translate_t
-        sf.translate_y = sf.translation(-1,10,1,500)
-        sf.translate_t = sf.translation(-1,10,1,500)
-    def tearDown(self):
-        sf.translate_y = self.translate_y
-        sf.translate_t = self.translate_t
+        self.trans=dict()
+        self.trans['ym'],self.trans['yb'] = sf.translation(-1,10,1,500)
+        self.trans['tm'],self.trans['tb'] = sf.translation(-1,10,1,500)
     def testArithmetic(self):
-        r = sf.tick(1,1,lambda t,y:2*t-y,2**0.5)
+        r = sf.tick(1,1,lambda t,y:2*t-y,2**0.5,trans=self.trans)
         self.assertEqual(r,[499.5, 499.5, 500.5, 500.5])
     def testDivideZero(self):
-        r = sf.tick(1,0,lambda t,y:t/y,1)
+        r = sf.tick(1,0,lambda t,y:t/y,1,trans=self.trans)
         self.assertEqual(r,[500.0, 254.5, 500.0, 255.5])
     def testSyntaxError(self):
-        r = sf.tick(1,1,lambda t,y:ty,1)
+        r = sf.tick(1,1,lambda t,y:ty,1,trans=self.trans)
         self.assertEqual(r,[500.0, 500.0, 500.0, 500.0])
 
 class TestSanitization(unittest.TestCase):
@@ -52,25 +48,21 @@ class TestMisc(unittest.TestCase):
         self.assertEqual(r,'<line x1 = "1.2" y1 = "5.5" x2 = "5.2" y2 = "1.3" />')
 
 class TestTranslations(unittest.TestCase):
-    def testGeneralTranslation(self):
-        r = sf.translate(2,3,5)
-        self.assertEqual(r,2*5+3)
-        r = sf.translate(2,3,5,noshift=True)
-        self.assertEqual(r,2*5)
-
     def testTranslationGenerator(self):
-        f = sf.translation(1,2,3,5)
-        self.assertEqual(f(1),2)
-        self.assertEqual(f(3),5)
+        a,b = sf.translation(1,2,3,5)
+        self.assertEqual(a*1+b,2)
+        self.assertEqual(a*3+b,5)
 
 class TestSlopeFieldGenerator(unittest.TestCase):
+    def setUp(self):
+        self.trans = {'tm':1,'tb':0,'ym':1,'yb':0}
     def testSingleTick(self):
         d = {'tmax':1,'tmin':0,'tticks':1,'ymin':0,'ymax':2,'yticks':1,'fn':lambda t,y:1}
-        r = list(sf.slopefield(d))
+        r = list(sf.slopefield(d,trans=self.trans))
         self.assertEqual(r[0],[0.2878679656440358, 0.7878679656440357, 0.7121320343559643, 1.2121320343559643])
     def testMultipleTick(self):
         d = {'tmax':1,'tmin':0,'tticks':20,'ymin':0,'ymax':2,'yticks':25,'fn':lambda t,y:1}
-        r = len(list(sf.slopefield(d)))
+        r = len(list(sf.slopefield(d,trans=self.trans)))
         self.assertEqual(r,20*25)
 
 
