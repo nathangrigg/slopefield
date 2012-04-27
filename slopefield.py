@@ -189,11 +189,8 @@ def tick(t,y,f,length):
     yy = translate_y(y)
     try:
         slope = f(t,y)
-    except ZeroDivisionError:
+    except (ZeroDivisionError,OverflowError):
         # vertical tick on division by zero
-        out = [tt, yy-0.5*length,
-               tt, yy+0.5*length]
-    except OverflowError:
         out = [tt, yy-0.5*length,
                tt, yy+0.5*length]
     except:
