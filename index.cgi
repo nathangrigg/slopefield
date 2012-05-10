@@ -6,7 +6,7 @@ import sys
 cgi_input = cgi.FieldStorage()
 
 # if there are no request parameters, write out static file, if possible
-if len(cgi_input.keys()) == 0 and len(sys.argv)==1:
+if len(cgi_input.keys()) == 0 and len(sys.argv) == 1:
     try:
         f = open('landing.html','r')
     except:
