@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8' />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+    <meta name="description" content="Slopefield : Generate svg slopefield" />
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>Slopefield</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/nathan11g/slopefield">View on GitHub</a>
+
+          <h1 id="project_title">Slopefield</h1>
+          <h2 id="project_tagline">Generate svg slopefield</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/nathan11g/slopefield/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/nathan11g/slopefield/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <h1>About</h1>
+
+<p>This is a cgi script and python module to draw a slope field for a first-order differential equation in the form <code>y'=f(t,y)</code>.</p>
+
+<p>The input is checked against a whitelist and then converted to a python function using <code>eval</code>.</p>
+
+<h1>Installation</h1>
+
+<p>Requires Python 2.6 or 2.7</p>
+
+<p>Put the files <code>index.cgi</code>, <code>template.html</code>, <code>style.css</code>, and <code>slopefield.py</code>
+in a folder that can run cgi scripts.</p>
+
+<p>Speed things up by creating a landing page using</p>
+
+<pre><code>$ ./index.cgi --no-cache &gt; landing.html
+</code></pre>
+
+<p>If you make changes to <code>template.html</code>, you will need to do this again to update
+the cache.</p>
+
+<h1>License</h1>
+
+<p>Written by Nathan Grigg</p>
+
+<p>This work is licensed under a <a href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution-ShareAlike 3.0 License</a>.</p>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">Slopefield maintained by <a href="https://github.com/nathan11g">nathan11g</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>
