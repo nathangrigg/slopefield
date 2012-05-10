@@ -68,11 +68,11 @@ def sanitize(fn_str, log_file=None):
         'Syntax Error. Something is wrong with the function you entered. ' + \
         'Common mistakes include writing <tt>3x</tt> instead of <tt>3*x</tt> '+\
         ' or <tt>sin t</tt> instead of <tt>sin(t)</tt>.')
-    except NameError, S:
+    except NameError as S:
         write_log(log_file, fn_str, S, 'eval')
         raise SanitizeError(
          'Something is wrong with the function you entered')
-    except Exception, S:
+    except Exception as S:
         write_log(log_file, fn_str, S, 'eval')
         raise SanitizeError(
           'Something is wrong with the function you entered.')
@@ -82,7 +82,7 @@ def sanitize(fn_str, log_file=None):
         fn(1.25, 0.75)
     except (ValueError, ZeroDivisionError, OverflowError):
         pass
-    except TypeError, S:
+    except TypeError as S:
         if S.message == "'float' object is not callable":
             raise SanitizeError(
               'Invalid syntax. Please use explicit multiplication. ' +\
@@ -92,7 +92,7 @@ def sanitize(fn_str, log_file=None):
             raise SanitizeError(
               'Something is wrong with the function you entered.')
 
-    except Exception, S:
+    except Exception as S:
         write_log(log_file, fn_str, S, 'sanity check')
         raise SanitizeError(
           'Something is wrong with the function you entered.')
@@ -269,7 +269,7 @@ def cgi_output(cgi_input, template_file, log_file=None):
     else:
         try:
             form['fn'] = sanitize(form['fn_str'], log_file)
-        except SanitizeError, msg:
+        except SanitizeError as msg:
             form['content'] = "<p class='alert'>%s</p>" % msg
             yield Template(open(template_file).read()).safe_substitute(form)
             return
