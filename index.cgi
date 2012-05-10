@@ -1,4 +1,10 @@
 #! /usr/bin/python
+#
+# Use as a cgi script
+#
+# Draws a slope field
+#
+# Create a cache of the landing file with ./index.cgi --no-cache > landing.html
 
 import cgi
 import sys
@@ -6,7 +12,8 @@ import sys
 cgi_input = cgi.FieldStorage()
 
 # if there are no request parameters, write out static file, if possible
-if len(cgi_input.keys()) == 0 and len(sys.argv) == 1:
+if len(cgi_input.keys()) == 0 and len(sys.argv) == 1 \
+  							  or sys.argv[1] == "--no-cache":
     try:
         f = open('landing.html','r')
     except:
