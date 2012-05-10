@@ -11,7 +11,7 @@ ln = log
 class SanitizeError(Exception):
     pass
 
-def parse_form(cgi_input,log_file=None):
+def parse_form(cgi_input):
     """Returns dictionary with pertinent data from a FieldStorage instance"""
 
     def cgi_get(name, default, convert=float):
@@ -260,7 +260,7 @@ def cgi_output(cgi_input, template_file, log_file=None):
 
     yield "Content-Type: text/html\r\n\r"
 
-    form = parse_form(cgi_input, log_file)
+    form = parse_form(cgi_input)
 
     if form['fn_str'] is None:
         form['fn_str'] = ""
