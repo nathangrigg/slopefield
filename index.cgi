@@ -32,7 +32,7 @@ import cgitb
 cgitb.enable()
 
 for line in slopefield.cgi_output(cgi_input,
-	  template_file="template.html",
-	  log_file=None):
-	print line
+      template_file="template.html",
+      log_file=None):
+    print line
 
