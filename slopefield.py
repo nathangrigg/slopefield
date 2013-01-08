@@ -11,44 +11,30 @@ ln = log
 class SanitizeError(Exception):
     pass
 
-def parse_form(cgi_input):
-    """Returns dictionary with pertinent data from a FieldStorage instance"""
+def sanitize(params):
+    """Sanitize the parameters"""
 
-    def cgi_get(name, default, convert=float):
-        """Gets the cgi value and converts it, with a default value on error"""
-        field_str = cgi_input.getfirst(name, str(default))
-        try:
-            value = convert(field_str)
-        except ValueError:
-            value = default
+    d = dict(params)
 
-        return value
-
-    tmin = cgi_get("tmin", 0)
-    tmax = cgi_get("tmax", 3)
-    tticks = clip(cgi_get('tticks', 21, int), 10, 50)
-
-    ymin = cgi_get("ymin", -1)
-    ymax = cgi_get("ymax", 1)
-    yticks = clip(cgi_get('yticks', 15, int), 10, 40)
+    d['tticks'] = clip(d['tticks'], 10, 50)
+    d['yticks'] = clip(d['yticks'], 10, 40)
 
     # ensure that delta_t and delta_y will be positive
-    if (tmax - tmin) / tticks <= 0:
-        tmax = tmin + 1
-    if (ymax - ymin) / yticks <= 0:
-        ymax = ymin + 1
+    if (d['tmax'] - d['tmin']) / d['tticks'] <= 0:
+        d['tmax'] = d['tmin'] + 1
+    if (d['ymax'] - d['ymin']) / d['yticks'] <= 0:
+        d['ymax'] = d['ymin'] + 1
 
-    fn_str = cgi_input.getfirst("fn")
+    if d['fn_str']:
+        d['fn'] = sanitize_fn(d['fn_str'])
 
-    return {'tmin': tmin, 'tmax': tmax, 'tticks': tticks,
-            'ymin': ymin, 'ymax': ymax, 'yticks': yticks,
-            'fn_str': fn_str}
+    return d
 
 def clip(value, left, right):
     """Forces value to be within the range [left, right]"""
     return min(right, max(left, value))
 
-def sanitize(fn_str, log_file=None):
+def sanitize_fn(fn_str):
     """Sanitizes fn_str, evaluates and returns function"""
     words = re.split(r'[0-9.+\-*/^ ()]+', fn_str)
     for word in words:
@@ -69,11 +55,9 @@ def sanitize(fn_str, log_file=None):
         'Common mistakes include writing <tt>3x</tt> instead of <tt>3*x</tt> '+\
         ' or <tt>sin t</tt> instead of <tt>sin(t)</tt>.')
     except NameError as S:
-        write_log(log_file, fn_str, S, 'eval')
         raise SanitizeError(
          'Something is wrong with the function you entered')
     except Exception as S:
-        write_log(log_file, fn_str, S, 'eval')
         raise SanitizeError(
           'Something is wrong with the function you entered.')
 
@@ -88,26 +72,14 @@ def sanitize(fn_str, log_file=None):
               'Invalid syntax. Please use explicit multiplication. ' +\
               '(Bad: 5y. Good: 5*y.)')
         else:
-            write_log(log_file, fn_str, S, 'sanity check')
             raise SanitizeError(
               'Something is wrong with the function you entered.')
 
     except Exception as S:
-        write_log(log_file, fn_str, S, 'sanity check')
         raise SanitizeError(
           'Something is wrong with the function you entered.')
 
     return fn
-
-def write_log(log_file, fn_str, msg, s):
-    if log_file is not None:
-        try:
-            f = open(log_file, 'a')
-        except:
-            pass
-        else:
-            f.write("%s\t%s\t%s\n" % (fn_str, msg, s))
-            f.close()
 
 def svg_tick(tick):
     """Returns a line of svg representing the tick"""
@@ -255,27 +227,22 @@ xmlns:xlink="http://www.w3.org/1999/xlink">""" % canvas
     # close out svg
     yield "</g></svg>"
 
-def cgi_output(cgi_input, template_file, log_file=None):
+def cgi_output(params, template_file):
     """Generator for cgi output, one line at a time."""
 
-    yield "Content-Type: text/html\r\n\r"
+    try:
+        form = sanitize(params)
+    except SanitizeError as msg:
+        form['content'] = "<p class='alert'>%s</p>" % msg
+        yield Template(open(template_file).read()).safe_substitute(form)
+        return
+    else:
+        form['title'] = "y'=" + form['fn_str']
 
-    form = parse_form(cgi_input)
-
-    if form['fn_str'] is None:
+    if not form['fn_str']:
         form['fn_str'] = ""
         form['fn'] = lambda t, y: 2*y/tan(2*t)
         form['title'] = "y'=2*y/tan(2*t)"
-    else:
-        try:
-            form['fn'] = sanitize(form['fn_str'], log_file)
-        except SanitizeError as msg:
-            form['content'] = "<p class='alert'>%s</p>" % msg
-            yield Template(open(template_file).read()).safe_substitute(form)
-            return
-        else:
-            form['title'] = "y'=" + form['fn_str']
-
 
     # set up the canvas
 
