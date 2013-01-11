@@ -230,8 +230,9 @@ xmlns:xlink="http://www.w3.org/1999/xlink">""" % canvas
 def cgi_output(params, template_file):
     """Generator for cgi output, one line at a time."""
 
+    form = params
     try:
-        form = sanitize(params)
+        form = sanitize(form)
     except SanitizeError as msg:
         form['content'] = "<p class='alert'>%s</p>" % msg
         yield Template(open(template_file).read()).safe_substitute(form)
