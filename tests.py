@@ -20,19 +20,19 @@ class TestTick(unittest.TestCase):
 
 class TestSanitization(unittest.TestCase):
     def testValidFunction(self):
-        r = sf.sanitize('sin(2+pi)*e^(1.2) + 1/2 - sqrt(2)')
+        r = sf.sanitize_fn('sin(2+pi)*e^(1.2) + 1/2 - sqrt(2)')
         self.assertEqual(r(1,1),-3.933187336977838)
-        r = sf.sanitize('t+y/2')
+        r = sf.sanitize_fn('t+y/2')
         self.assertEqual(r(1,1),1.5,'t=1,y=1')
         self.assertEqual(r(-1,4),1,'t=-1,y=1')
     def testInvalidWord(self):
-        self.assertRaises(sf.SanitizeError,sf.sanitize,'3 + int(1.2)')
+        self.assertRaises(sf.SanitizeError,sf.sanitize_fn,'3 + int(1.2)')
     def testSyntaxError(self):
-        self.assertRaises(sf.SanitizeError,sf.sanitize,'3+*2')
+        self.assertRaises(sf.SanitizeError,sf.sanitize_fn,'3+*2')
     def testNameError(self):
-        self.assertRaises(sf.SanitizeError,sf.sanitize,'sin.t')
+        self.assertRaises(sf.SanitizeError,sf.sanitize_fn,'sin.t')
     def testSanityError(self):
-        self.assertRaises(sf.SanitizeError,sf.sanitize,'sin + t')
+        self.assertRaises(sf.SanitizeError,sf.sanitize_fn,'sin + t')
 
 class TestClip(unittest.TestCase):
     def testClipMiddle(self):
