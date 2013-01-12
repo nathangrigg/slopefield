@@ -33,24 +33,50 @@
       <section id="main_content" class="inner">
         <h1>About</h1>
 
-<p>This is a cgi script and python module to draw a slope field for a first-order differential equation in the form <code>y'=f(t,y)</code>.</p>
+<p>This is a python module to draw a slope field for a first-order differential equation in the form <code>y'=f(t,y)</code>.</p>
 
 <p>The input is checked against a whitelist and then converted to a python function using <code>eval</code>.</p>
 
-<h1>Installation</h1>
+<h1>Installation using heroku</h1>
 
-<p>Requires Python 2.6 or 2.7</p>
+<p>If you would like to host your own version of the slopefield app,
+you can use the following steps. Heroku allows anybody to host one
+free app.</p>
 
-<p>Put the files <code>index.cgi</code>, <code>template.html</code>, <code>style.css</code>, and <code>slopefield.py</code>
-in a folder that can run cgi scripts.</p>
+<h2>Create and set up a Heroku account.</h2>
 
-<p>Speed things up by creating a landing page using</p>
+<ol>
+<li>Sign up for a Heroku account.</li>
+<li>Install the Heroku Toolbelt.</li>
+<li>Using your command shell, run <code>heroku login</code> to login to heroku</li>
+</ol>
 
-<pre><code>$ ./index.cgi --no-cache &gt; landing.html
+<p>For more information, see <a href="https://devcenter.heroku.com/articles/quickstart">https://devcenter.heroku.com/articles/quickstart</a>.</p>
+
+<h2>Clone the slopefield app</h2>
+
+<p>You will need git installed. Run</p>
+
+<pre><code>$ git clone http://github.com/nathan11g/slopefield.git
+$ cd slopefield
 </code></pre>
 
-<p>If you make changes to <code>template.html</code>, you will need to do this again to update
-the cache.</p>
+<h2>Create the Heroku app</h2>
+
+<p>Choose a name for your app. Mine is called slopefield, but you will have to
+use a different name. This will be part of the url of the app (e.g.
+slopefield.herokuapp.com).</p>
+
+<p>Now run</p>
+
+<pre><code>$ heroku create slopefield
+</code></pre>
+
+<p>Finally, push the app to heroku using</p>
+
+<pre><code>$ git push heroku master
+</code></pre>
+
 
 <h1>License</h1>
 
@@ -68,7 +94,7 @@ the cache.</p>
       </footer>
     </div>
 
-    
+
 
   </body>
 </html>
