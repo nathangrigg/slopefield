@@ -26,6 +26,7 @@ def sanitize(params):
         d['ymax'] = d['ymin'] + 1
 
     if d['fn_str']:
+        d['fn_str'] = re.sub(r'\bx\b', 't', d['fn_str'])
         d['fn'] = sanitize_fn(d['fn_str'])
 
     return d
@@ -52,7 +53,7 @@ def sanitize_fn(fn_str):
     except SyntaxError:
         raise SanitizeError(
         'Syntax Error. Something is wrong with the function you entered. ' + \
-        'Common mistakes include writing <tt>3x</tt> instead of <tt>3*x</tt> '+\
+        'Common mistakes include writing <tt>3t</tt> instead of <tt>3*t</tt> '+\
         ' or <tt>sin t</tt> instead of <tt>sin(t)</tt>.')
     except NameError as S:
         raise SanitizeError(
