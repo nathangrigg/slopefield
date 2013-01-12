@@ -4,6 +4,9 @@ from string import Template
 from math import sin, cos, tan, sqrt, e, pi, log, \
     cosh, sinh, tanh, acos, asin, atan
 
+with open("template.html") as f:
+    TEMPLATE = Template(f.read())
+
 VALID_WORDS = ['', 'sin', 'cos', 'tan', 't', 'y', 'abs', 'sqrt', 'e',
     'pi', 'log', 'ln', 'acos', 'asin', 'atan', 'cosh', 'sinh', 'tanh']
 ln = log
@@ -228,7 +231,7 @@ xmlns:xlink="http://www.w3.org/1999/xlink">""" % canvas
     # close out svg
     yield "</g></svg>"
 
-def html_output(params, template_file):
+def html_output(params):
     """Generator for html output, one line at a time."""
 
     form = params
@@ -236,7 +239,7 @@ def html_output(params, template_file):
         form = sanitize(form)
     except SanitizeError as msg:
         form['content'] = "<p class='alert'>%s</p>" % msg
-        yield Template(open(template_file).read()).safe_substitute(form)
+        yield TEMPLATE.safe_substitute(form)
         return
     else:
         form['title'] = "y'=" + form['fn_str']
@@ -265,7 +268,7 @@ def html_output(params, template_file):
 
     # print it out
 
-    start, end = Template(open(template_file).read()).safe_substitute(form)\
+    start, end = TEMPLATE.safe_substitute(form)\
       .split('$content',1)
 
     yield start
@@ -278,3 +281,6 @@ def html_output(params, template_file):
     yield '</div>'
 
     yield end
+
+BLANK = "\n".join(html_output({'tmin': 0, 'tmax': 3, 'tticks': 21,
+            'ymin': -1, 'ymax': 1, 'yticks': 15, 'fn_str': ""}))

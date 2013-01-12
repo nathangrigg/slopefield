@@ -24,8 +24,11 @@ def parse_form(form):
 
 @app.route('/')
 def graph():
-    params = parse_form(request.args)
-    return "\n".join(slopefield.html_output(params,template_file="template.html"))
+    if request.args:
+        params = parse_form(request.args)
+        return "\n".join(slopefield.html_output(params))
+    else:
+        return slopefield.BLANK
 
 
 if __name__ == '__main__':
