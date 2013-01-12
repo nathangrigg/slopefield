@@ -228,8 +228,8 @@ xmlns:xlink="http://www.w3.org/1999/xlink">""" % canvas
     # close out svg
     yield "</g></svg>"
 
-def cgi_output(params, template_file):
-    """Generator for cgi output, one line at a time."""
+def html_output(params, template_file):
+    """Generator for html output, one line at a time."""
 
     form = params
     try:
