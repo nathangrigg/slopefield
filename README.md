@@ -6,17 +6,8 @@ The input is checked against a whitelist and then converted to a python function
 
 # Installation
 
-Requires Python 2.6 or 2.7
-
-Put the files `index.cgi`, `template.html`, `style.css`, and `slopefield.py`
-in a folder that can run cgi scripts.
-
-Speed things up by creating a landing page using
-
-    $ ./index.cgi --no-cache > landing.html
-
-If you make changes to `template.html`, you will need to do this again to update
-the cache.
+The web app can be installed on heroku. For instructions, see
+<http://nathan11g.github.com/slopefield/>
 
 # License
 
