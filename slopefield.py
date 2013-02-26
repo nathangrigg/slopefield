@@ -1,15 +1,19 @@
 from __future__ import division
 import re
 from string import Template
-from math import sin, cos, tan, sqrt, e, pi, log, \
-    cosh, sinh, tanh, acos, asin, atan
+import numpy as np
+from numpy import sin, cos, tan, sqrt, e, pi, log, \
+    cosh, sinh, tanh, arccos, arcsin, arctan, abs
 
 with open("template.html") as f:
     TEMPLATE = Template(f.read())
 
 VALID_WORDS = ['', 'sin', 'cos', 'tan', 't', 'y', 'abs', 'sqrt', 'e',
-    'pi', 'log', 'ln', 'acos', 'asin', 'atan', 'cosh', 'sinh', 'tanh']
-ln = log
+    'pi', 'log', 'ln', 'acos', 'asin', 'atan', 'cosh', 'sinh', 'tanh',
+    'arcsin', 'arctan', 'arccos']
+ln, asin, acos, atan = log, arcsin, arccos, arctan
+
+np.seterr(divide='ignore', invalid='ignore')
 
 class SanitizeError(Exception):
     pass
@@ -154,38 +158,37 @@ def tick(t, y, f, length, trans):
     """Returns a tick centered at t,y with slope f(t,y) and given length"""
     tt = t * trans['tm'] + trans['tb']
     yy = y * trans['ym'] + trans['yb']
-    try:
-        slope = f(t, y)
-    except (ZeroDivisionError, OverflowError):
-        # vertical tick on division by zero
-        out = [tt, yy - 0.5 * length,
-               tt, yy + 0.5 * length]
-    except:
-        out = [tt, yy, tt, yy]
-    else:
-        vt =  trans['tm']
-        vy =  trans['ym'] * slope
-        norm = (vt**2 + vy**2)**0.5
-        vt *= 0.5 * length / norm
-        vy *= 0.5 * length / norm
-        out = [tt-vt, yy-vy, tt+vt, yy+vy]
+    slope = f(t, y)
+    # vector components
+    vt =  trans['tm']
+    vy =  trans['ym'] * slope
+    # normalize
+    norm = (vt**2 + vy**2)**0.5
+    vt *= 0.5 * length / norm
+    vy *= 0.5 * length / norm
+    # combine
+    out = np.vstack([tt-vt, yy-vy, tt+vt, yy+vy]).T
 
-    return out
+    # fix infinite slopes
+    inf_mask = np.isinf(slope)
+    inf_y = yy[inf_mask]
+    out[inf_mask, 1] = inf_y - 0.5 * length
+    out[inf_mask, 3] = inf_y + 0.5 * length
+
+    # delete NaNs
+    return out[~np.isnan(slope)]
 
 def slopefield(form, trans):
-    """Returns a generator for a slopefield"""
-    dt = (form['tmax']-form['tmin'])/form['tticks']
-    dy = (form['ymax']-form['ymin'])/form['yticks']
+    """Returns a slopefield array"""
+    tticks = np.linspace(form['tmin'], form['tmax'], form['tticks'])
+    yticks = np.linspace(form['ymin'], form['ymax'], form['yticks'])
+    dt = tticks[1] - tticks[0]
+    dy = yticks[1] - yticks[0]
+
+    ts, ys = np.meshgrid(tticks, yticks)
     ticklength = 0.6 * min(abs(dt*trans['tm']), abs(dy*trans['ym']))
 
-    # loop
-    t = form['tmin'] + 0.5 * dt
-    while t < form['tmax']:
-        y = form['ymin'] + 0.5 * dy
-        while y < form['ymax']:
-            yield tick(t, y, form['fn'], ticklength, trans=trans)
-            y += dy
-        t += dt
+    return tick(ts.flatten(), ys.flatten(), form['fn'], ticklength, trans=trans)
 
 def canvas_dimensions(form, canvas_size=(750, 500)):
     """calculate dimensions of the canvas, making room for axes"""
@@ -284,3 +287,4 @@ def html_output(params):
 
 BLANK = "\n".join(html_output({'tmin': 0, 'tmax': 3, 'tticks': 21,
             'ymin': -1, 'ymax': 1, 'yticks': 15, 'fn_str': ""}))
+

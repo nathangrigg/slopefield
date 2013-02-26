@@ -1,5 +1,3 @@
-#! /usr/bin/python
-
 import slopefield as sf
 import unittest
 
@@ -14,9 +12,6 @@ class TestTick(unittest.TestCase):
     def testDivideZero(self):
         r = sf.tick(1,0,lambda t,y:t/y,1,trans=self.trans)
         self.assertEqual(r,[500.0, 254.5, 500.0, 255.5])
-    def testSyntaxError(self):
-        r = sf.tick(1,1,lambda t,y:ty,1,trans=self.trans)
-        self.assertEqual(r,[500.0, 500.0, 500.0, 500.0])
 
 class TestSanitization(unittest.TestCase):
     def testValidFunction(self):
@@ -64,8 +59,6 @@ class TestSlopeFieldGenerator(unittest.TestCase):
         d = {'tmax':1,'tmin':0,'tticks':20,'ymin':0,'ymax':2,'yticks':25,'fn':lambda t,y:1}
         r = len(list(sf.slopefield(d,trans=self.trans)))
         self.assertEqual(r,20*25)
-
-
 
 if __name__ == "__main__":
     unittest.main()
