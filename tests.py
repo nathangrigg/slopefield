@@ -1,6 +1,5 @@
-#! /usr/bin/python
-
 import slopefield as sf
+import numpy as np
 import unittest
 
 class TestTick(unittest.TestCase):
@@ -9,14 +8,11 @@ class TestTick(unittest.TestCase):
         self.trans['ym'],self.trans['yb'] = sf.translation(-1,10,1,500)
         self.trans['tm'],self.trans['tb'] = sf.translation(-1,10,1,500)
     def testArithmetic(self):
-        r = sf.tick(1,1,lambda t,y:2*t-y,2**0.5,trans=self.trans)
-        self.assertEqual(r,[499.5, 499.5, 500.5, 500.5])
+        r = sf.tick(np.array([1]),np.array([1]),lambda t,y:2*t-y,2**0.5,trans=self.trans)
+        self.assertAlmostEqual(r.sum(), 2000)
     def testDivideZero(self):
-        r = sf.tick(1,0,lambda t,y:t/y,1,trans=self.trans)
-        self.assertEqual(r,[500.0, 254.5, 500.0, 255.5])
-    def testSyntaxError(self):
-        r = sf.tick(1,1,lambda t,y:ty,1,trans=self.trans)
-        self.assertEqual(r,[500.0, 500.0, 500.0, 500.0])
+        r = sf.tick(np.array([1]),np.array([0]),lambda t,y:t/y,1,trans=self.trans)
+        self.assertAlmostEqual(r.sum(),1510)
 
 class TestSanitization(unittest.TestCase):
     def testValidFunction(self):
@@ -58,14 +54,12 @@ class TestSlopeFieldGenerator(unittest.TestCase):
         self.trans = {'tm':1,'tb':0,'ym':1,'yb':0}
     def testSingleTick(self):
         d = {'tmax':1,'tmin':0,'tticks':1,'ymin':0,'ymax':2,'yticks':1,'fn':lambda t,y:1}
-        r = list(sf.slopefield(d,trans=self.trans))
-        self.assertEqual(r[0],[0.2878679656440358, 0.7878679656440357, 0.7121320343559643, 1.2121320343559643])
+        r = sf.slopefield(d,trans=self.trans)
+        self.assertAlmostEqual(r.sum(), 3)
     def testMultipleTick(self):
         d = {'tmax':1,'tmin':0,'tticks':20,'ymin':0,'ymax':2,'yticks':25,'fn':lambda t,y:1}
         r = len(list(sf.slopefield(d,trans=self.trans)))
         self.assertEqual(r,20*25)
-
-
 
 if __name__ == "__main__":
     unittest.main()
