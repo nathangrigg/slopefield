@@ -15,35 +15,41 @@ ln, asin, acos, atan = log, arcsin, arccos, arctan
 
 np.seterr(divide='ignore', invalid='ignore')
 
+###########################################
+# Methods to handle parameters
+###########################################
+
 class SanitizeError(Exception):
     pass
 
+def clip(value, left, right):
+    """Force value to be within the range [left, right]"""
+    return min(right, max(left, value))
+
 def sanitize(params):
-    """Sanitize the parameters"""
+    """Sanitize the function and limit number of ticks"""
 
     d = dict(params)
 
     d['tticks'] = clip(d['tticks'], 10, 50)
     d['yticks'] = clip(d['yticks'], 10, 40)
 
-    # ensure that delta_t and delta_y will be positive
-    if (d['tmax'] - d['tmin']) / d['tticks'] <= 0:
+    # ensure that min < max
+    if d['tmax'] <= d['tmin']:
         d['tmax'] = d['tmin'] + 1
-    if (d['ymax'] - d['ymin']) / d['yticks'] <= 0:
+    if d['ymax'] <= d['ymin']:
         d['ymax'] = d['ymin'] + 1
 
     if d['fn_str']:
-        d['fn_str'] = re.sub(r'\bx\b', 't', d['fn_str'])
+        d['fn_str'] = re.sub(r'\bx\b', 't', d['fn_str']) # replace x with t
         d['fn'] = sanitize_fn(d['fn_str'])
 
     return d
 
-def clip(value, left, right):
-    """Forces value to be within the range [left, right]"""
-    return min(right, max(left, value))
-
 def sanitize_fn(fn_str):
-    """Sanitizes fn_str, evaluates and returns function"""
+    """Sanitizes fn_str, evaluates and returns function.
+
+    Raises SanitizeError if something goes wrong with sanitation"""
     words = re.split(r'[0-9.+\-*/^ ()]+', fn_str)
     for word in words:
         if word not in VALID_WORDS:
