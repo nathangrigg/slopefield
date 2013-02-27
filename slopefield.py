@@ -95,16 +95,14 @@ def sanitize_fn(fn_str):
 
     return fn
 
+###########################################
+# Methods to output svg
+###########################################
+
 def svg_tick(tick):
     """Returns a line of svg representing the tick"""
     return '<line x1 = "%.01f" y1 = "%.01f" x2 = "%.01f" y2 = "%.01f" />' \
            % tuple(tick)
-
-def translation(p1, i1, p2, i2):
-    """Returns the affine translation that takes p1 to i1 and p2 to i2"""
-    stretch = (i2-i1) / (p2-p1)
-    shift = i1 - stretch * p1
-    return stretch, shift
 
 def axes(canvas, trans, title=""):
     """Creates a box with axis labels"""
@@ -160,6 +158,58 @@ def axes(canvas, trans, title=""):
         (canvas['left']-6, value*trans['ym'] + trans['yb'] + 4, label)
     yield '</g>'
 
+def canvas_dimensions(form, canvas_size=(750, 500)):
+    """calculate dimensions of the canvas, making room for axes"""
+    w, h = canvas_size
+
+    # make axis ticks and labels
+    taxis = [form['tmin'] + float(form['tmax']-form['tmin'])*i/10 \
+      for i in range(11)]
+    taxis_label = ["%.3g" % t for t in taxis]
+    yaxis = [form['ymin'] + float(form['ymax']-form['ymin'])*i/10 \
+      for i in range(11)]
+    yaxis_label = ["%.3g" % y for y in yaxis]
+    yaxis_label_width = max([len(label) for label in yaxis_label])
+
+    # adjust canvas for labels
+    top, bottom = 15, h - 15
+    left, right = 6*yaxis_label_width+6, w-15
+
+    return {'top': top, 'left': left, 'bottom': bottom, 'right': right,
+        'w': w, 'h': h, 'taxis': taxis, 'taxis_label': taxis_label,
+        'yaxis': yaxis, 'yaxis_label': yaxis_label}
+
+def svg_slopefield(canvas, tick_array, **kwargs):
+    """Returns an svg image for a slopefield"""
+
+    # beginning of svg
+    yield """<svg viewBox="0 0 %(w)d %(h)d"
+width="%(w)d" height="%(h)d"
+xmlns="http://www.w3.org/2000/svg"
+xmlns:xlink="http://www.w3.org/1999/xlink">""" % canvas
+
+    for line in axes(canvas, **kwargs):
+        yield line
+
+    # style for tick marks
+    yield '<g style="stroke-width:1; stroke:black;">'
+
+    for tick in tick_array:
+        yield svg_tick(tick)
+
+    # close out svg
+    yield "</g></svg>"
+
+###########################################
+# Methods to create tick array
+###########################################
+
+def translation(p1, i1, p2, i2):
+    """Returns the affine translation that takes p1 to i1 and p2 to i2"""
+    stretch = (i2-i1) / (p2-p1)
+    shift = i1 - stretch * p1
+    return stretch, shift
+
 def tick(t, y, f, length, trans):
     """Returns a tick centered at t,y with slope f(t,y) and given length"""
     tt = t * trans['tm'] + trans['tb']
@@ -200,50 +250,9 @@ def slopefield(form, trans):
 
     return tick(ts.flatten(), ys.flatten(), form['fn'], ticklength, trans=trans)
 
-def canvas_dimensions(form, canvas_size=(750, 500)):
-    """calculate dimensions of the canvas, making room for axes"""
-    w, h = canvas_size
-
-    # make axis ticks and labels
-    taxis = [form['tmin'] + float(form['tmax']-form['tmin'])*i/10 \
-      for i in range(11)]
-    taxis_label = ["%.3g" % t for t in taxis]
-    yaxis = [form['ymin'] + float(form['ymax']-form['ymin'])*i/10 \
-      for i in range(11)]
-    yaxis_label = ["%.3g" % y for y in yaxis]
-    yaxis_label_width = max([len(label) for label in yaxis_label])
-
-    # adjust canvas for labels
-    top, bottom = 15, h - 15
-    left, right = 6*yaxis_label_width+6, w-15
-
-    return {'top': top, 'left': left, 'bottom': bottom, 'right': right,
-        'w': w, 'h': h, 'taxis': taxis, 'taxis_label': taxis_label,
-        'yaxis': yaxis, 'yaxis_label': yaxis_label}
-
-def svg_slopefield(canvas, slopefield_generator, trans, title=""):
-    """Returns an svg image for a slopefield"""
-
-    # beginning of svg
-    yield """<svg viewBox="0 0 %(w)d %(h)d"
-width="%(w)d" height="%(h)d"
-xmlns="http://www.w3.org/2000/svg"
-xmlns:xlink="http://www.w3.org/1999/xlink">""" % canvas
-
-    for line in axes(canvas, trans=trans, title=title):
-        yield line
-
-    # style for tick marks
-    yield '<g style="stroke-width:1; stroke:black;">'
-
-    for i, tick in enumerate(slopefield_generator):
-        yield svg_tick(tick)
-        if i > 3000:
-            raise Exception("3000 ticks and counting. Infinite loop?")
-
-    # close out svg
-    yield "</g></svg>"
-
+###########################################
+# Methods to create html output
+###########################################
 def html_output(params):
     """Generator for html output, one line at a time."""
 
@@ -297,4 +306,3 @@ def html_output(params):
 
 BLANK = "\n".join(html_output({'tmin': 0, 'tmax': 3, 'tticks': 21,
             'ymin': -1, 'ymax': 1, 'yticks': 15, 'fn_str': ""}))
-
