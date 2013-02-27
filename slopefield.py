@@ -178,12 +178,16 @@ def tick(t, y, f, length, trans):
     # delete NaNs
     return out[~np.isnan(slope)]
 
+def ticks_step(min, max, num_ticks):
+    """Calculate steps and step size"""
+    ticks, step = np.linspace(min, max, num_ticks, retstep=True, endpoint=False)
+    return ticks + step / 2, step
+
 def slopefield(form, trans):
     """Returns a slopefield array"""
-    tticks = np.linspace(form['tmin'], form['tmax'], form['tticks'])
-    yticks = np.linspace(form['ymin'], form['ymax'], form['yticks'])
-    dt = tticks[1] - tticks[0]
-    dy = yticks[1] - yticks[0]
+
+    tticks, dt = ticks_step(form['tmin'], form['tmax'], form['tticks'])
+    yticks, dy = ticks_step(form['ymin'], form['ymax'], form['yticks'])
 
     ts, ys = np.meshgrid(tticks, yticks)
     ticklength = 0.6 * min(abs(dt*trans['tm']), abs(dy*trans['ym']))
