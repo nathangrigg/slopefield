@@ -225,6 +225,12 @@ def tick(t, y, f, length, trans):
     tt = t * trans['tm'] + trans['tb']
     yy = y * trans['ym'] + trans['yb']
     slope = f(t, y)
+    # just in case f is a constant function
+    if not isinstance(slope, np.ndarray):
+        constant = slope
+        slope = t.copy()
+        slope.fill(constant)
+
     # vector components
     vt = trans['tm']
     vy = trans['ym'] * slope
@@ -321,3 +327,4 @@ def html_output(params):
 
 BLANK = "\n".join(html_output({'tmin': 0, 'tmax': 3, 'tticks': 21,
             'ymin': -1, 'ymax': 1, 'yticks': 15, 'fn_str': ""}))
+
