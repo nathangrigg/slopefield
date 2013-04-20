@@ -7,7 +7,7 @@ The input is checked against a whitelist and then converted to a python function
 # Installation
 
 The web app can be installed on heroku. For instructions, see
-<http://nathan11g.github.com/slopefield/>
+<http://nathangrigg.github.io/slopefield/>
 
 # License
 
