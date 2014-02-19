@@ -15,10 +15,16 @@ def parse_form(form):
     ymax = float(form.get("ymax", 1))
     yticks = int(form.get('yticks', 15))
 
+    t0 = float(form.get("t0", 0))
+    y0 = float(form.get("y0", 0))
+    step = float(form.get("step", 0.1))
+    drawsol = "" if form.get("drawsol", "off")=="off" else "checked"
+
     fn_str = form.get("fn", "")
 
     return {'tmin': tmin, 'tmax': tmax, 'tticks': tticks,
             'ymin': ymin, 'ymax': ymax, 'yticks': yticks,
+            'step': step, 't0': t0, 'y0': y0, 'drawsol': drawsol,
             'fn_str': fn_str}
 
 

@@ -42,6 +42,10 @@ def sanitize(params):
         d['tmax'] = d['tmin'] + 1
     if d['ymax'] <= d['ymin']:
         d['ymax'] = d['ymin'] + 1
+    if d['t0'] < d['tmin'] or d['t0'] >= d['tmax']:
+        d['t0'] = 0.5*(d['tmin']+d['tmax'])
+    if d['y0'] < d['ymin'] or d['y0'] > d['ymax']:
+        d['y0'] = 0.5*(d['ymin']+d['ymax'])
 
     if d['fn_str']:
         d['fn_str'] = re.sub(r'\bx\b', 't', d['fn_str'])  # replace x with t
@@ -103,6 +107,11 @@ def sanitize_fn(fn_str):
 # Methods to output svg
 ###########################################
 
+
+def svg_dot(x, y, r):
+    """Returns a circle of svg representing the given ordered pair"""
+    return '<circle cx = "%.01f" cy = "%.01f" r="%.01f" />' \
+           % (x,y,r)
 
 def svg_tick(tick):
     """Returns a line of svg representing the tick"""
@@ -187,7 +196,7 @@ def canvas_dimensions(form, canvas_size=(750, 500)):
         'yaxis': yaxis, 'yaxis_label': yaxis_label}
 
 
-def svg_slopefield(canvas, tick_array, **kwargs):
+def svg_slopefield(canvas, initial_point, tick_array, euler_curve, **kwargs):
     """Returns an svg image for a slopefield"""
 
     # beginning of svg
@@ -204,7 +213,17 @@ xmlns:xlink="http://www.w3.org/1999/xlink">""" % canvas
 
     for tick in tick_array:
         yield svg_tick(tick)
+    yield '</g>'
 
+    if euler_curve!=None:
+        yield '<g style="stroke-width:3; stroke:blue;">'
+        for seg in euler_curve:
+            yield svg_tick(seg)
+        yield '</g>'
+    
+        yield '<g style="stroke-width: 3; stroke:red;">'
+        yield svg_dot(initial_point[0], initial_point[1], 6)
+    
     # close out svg
     yield "</g></svg>"
 
@@ -270,6 +289,69 @@ def slopefield(form, trans):
     return tick(ts.flatten(), ys.flatten(), form['fn'],
       ticklength, trans=trans)
 
+def eulersmethod(form, trans):
+    """Generates lines for Euler's method plot.
+    
+    The return value is An array indicating the line segments to be drawn in canvas coordinates:
+
+        [ [x0 y0 x1 y1]
+          [x1 y1 x2 y2]
+          ... ]
+
+    The elements are suitable for calling svg_tick with.  The orbit is
+    "clipped" to the canvas indicated by the form argument, and computation
+    stops when the orbit leaves the box (by a significant margin).  Computation
+    is also aborted if a NaN is encountered in computing fn.
+
+    """
+
+    t0 = form['t0']
+    y0 = form['y0']
+    f = form['fn']
+    step = form['step']
+    orbit = []
+    new_t=t0
+    new_y=y0
+    ymargin = 0.5*(form['ymax']-form['ymin'])
+
+
+    while new_t < form['tmax']-step and form['ymin'] - ymargin < new_y and new_y < form['ymax'] + ymargin:
+        old_t = new_t
+        old_y = new_y
+        # Compute derivative.  Could be bad, so abort with results so far if a
+        # division by zero or NaN occurs.
+        try:
+            yp = f(old_t,old_y)
+        except ArithmeticError:
+            break
+        if np.isnan(yp):
+            break
+
+        # Now we must determine the step size.  Nominally, it's step,
+        # but we wish to avoid our function passing through the side of
+        # the graph or through the top or bottom.
+  
+        this_step = min(step, form['tmax']-old_t)
+        print "yp*this_step = ", str(yp*this_step)
+        if yp*this_step > form['ymax']-old_y:
+            this_step = (form['ymax']-old_y)/yp
+        if yp*this_step < form['ymin']-old_y:
+            this_step = (form['ymin']-old_y)/yp
+        print "this_step = " + str(this_step)
+        if this_step < step/10:
+            break
+
+        new_t = old_t + this_step
+        print "new_t = " + str(new_t)
+        new_y = old_y + yp*this_step
+        orbit.append([old_t*trans['tm']+trans['tb'],old_y*trans['ym']+trans['yb'], new_t*trans['tm']+trans['tb'], new_y*trans['ym']+trans['yb']])
+        if old_t + step > form['tmax']:
+            break
+    return orbit
+
+def dot(form, trans):
+    return [form['t0']*trans['tm']+trans['tb'], form['y0']*trans['ym']+trans['yb']]
+
 ###########################################
 # Methods to create html output
 ###########################################
@@ -307,8 +389,15 @@ def html_output(params):
     # get a generator for the slopefield
     slopefield_generator = slopefield(form, trans=trans)
 
-    svg_generator = svg_slopefield(canvas, slopefield_generator,
-      trans=trans, title=form['title'])
+    # get a generator for the solution curve
+    euler_curve = None
+    initial_point = None
+    if form['drawsol']=='checked':
+        euler_curve = eulersmethod(form, trans=trans)
+        initial_point = dot(form, trans)
+
+    svg_generator = svg_slopefield(canvas, initial_point, slopefield_generator,
+      euler_curve, trans=trans, title=form['title'])
 
     # print it out
 
@@ -326,5 +415,5 @@ def html_output(params):
     yield end
 
 BLANK = "\n".join(html_output({'tmin': 0, 'tmax': 3, 'tticks': 21,
-            'ymin': -1, 'ymax': 1, 'yticks': 15, 'fn_str': ""}))
+            'ymin': -1, 'ymax': 1, 'yticks': 15, 'drawsol': 'checked', 't0': 0.1, 'y0': 0.1, 'step': 0.1, 'fn_str': ""}))
 

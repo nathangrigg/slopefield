@@ -44,6 +44,21 @@
 			<input type="number" name="yticks" size=5 value="$yticks"
 			min="10" max="50">
 		</label></td>
+                </tr><tr>
+		<td><label>t0:
+			<input type="number" name="t0" size=5 value="$t0" step="any">
+		</label></td>
+		<td><label>y0:
+			<input type="number" name="y0" size=5 value="$y0" step="any">
+		</label></td>
+                <td><label>step:
+                        <input type="number" name="step" size=5 value="$step" min="0.001" step="any">
+                </label></td>
+                </tr><tr>
+		<td colspan="3"><label>Draw solutions?</label>
+                        <input type="checkbox" name="drawsol" $drawsol>
+                </td>
+		</tr>
 	</table>
     <p><button type="submit">
     	Draw the slope field
