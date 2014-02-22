@@ -9,9 +9,14 @@ The input is checked against a whitelist and then converted to a python function
 The web app can be installed on heroku. For instructions, see
 <http://nathangrigg.github.io/slopefield/>
 
+# Authors
+
+- Nathan Grigg
+- Clinton Curry
+
 # License
 
-Written by Nathan Grigg
+Copyright Nathan Grigg.
 
 This work is licensed under a [Creative Commons Attribution-ShareAlike 3.0 License][1].
 
